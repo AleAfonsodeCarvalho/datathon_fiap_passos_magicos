@@ -3,55 +3,61 @@ import joblib
 import pandas as pd
 import google.generativeai as genai
 
-# Carregar modelo e colunas
+# --- CARREGAMENTO DE ASSETS ---
+# Certifique-se de que esses arquivos estão na mesma pasta do GitHub
 model = joblib.load('modelo_risco_passos.pkl')
 features = joblib.load('features_list.pkl')
 
-# --- CONFIGURAÇÃO DA API KEY ---
-if "GEMINI_KEY" in st.secrets:
-    GOOGLE_API_KEY = st.secrets["GEMINI_KEY"]
-else:
-    GOOGLE_API_KEY = st.sidebar.text_input("Insira sua Gemini API Key (Opcional)", type="password")
+# --- CONFIGURAÇÃO DA API KEY (EXCLUSIVAMENTE SIDEBAR) ---
+st.sidebar.header("Configurações de IA")
+GOOGLE_API_KEY = st.sidebar.text_input(
+    "Insira sua Gemini API Key", 
+    type="password", 
+    help="A chave é necessária apenas para o comentário humanizado do Mentor Digital."
+)
 
-# --- FUNÇÃO 1: EXPLICAÇÃO TÉCNICA (Lógica de Negócio) ---
+# --- FUNÇÃO 1: EXPLICAÇÃO TÉCNICA (Lógica de Alerta) ---
 def explicar_risco_tecnico(dados, prob):
     indicadores_baixos = [k for k, v in dados.items() if v < 7.0]
-    
-    # Tradução dos termos para o usuário
-    nomes = {
+    nomes_bonitos = {
         'IDA': 'Desempenho Acadêmico', 'IEG': 'Engajamento',
         'IPS': 'Socioemocional', 'IPP': 'Psicopedagógico', 'IPV': 'Ponto de Virada'
     }
     
     if prob > 0.5:
-        msg = f"O modelo identificou um **risco de {prob*100:.1f}%** baseado no cruzamento histórico de dados. "
+        msg = f"O modelo identificou um **risco de {prob*100:.1f}%** baseado nos padrões históricos. "
         if indicadores_baixos:
-            detalhes = ", ".join([nomes[idx] for idx in indicadores_baixos])
-            msg += f"Este alerta foi acionado principalmente pela fragilidade em: **{detalhes}**. "
-        msg += "Recomenda-se uma intervenção preventiva para evitar o distanciamento do aluno."
+            detalhes = ", ".join([nomes_bonitos[idx] for idx in indicadores_baixos])
+            msg += f"Este alerta foi gerado devido à baixa pontuação em: **{detalhes}**. "
+        msg += "Recomenda-se atenção especial a estes pontos para apoiar o desenvolvimento do aluno."
     else:
-        msg = "Os indicadores mostram que, apesar de possíveis oscilações, o aluno mantém uma trajetória de segurança estatística."
-    
+        msg = "Os indicadores atuais mantêm o aluno dentro de uma zona de segurança estatística."
     return msg
 
 # --- FUNÇÃO 2: COMENTÁRIO HUMANIZADO (IA) ---
 def gerar_comentario_ia(dados, risco, probabilidade):
-    if not GOOGLE_API_KEY:
-        return None # Silencioso se não houver chave
-
+    if not GOOGLE_API_KEY or GOOGLE_API_KEY.strip() == "":
+        return None
     try:
         genai.configure(api_key=GOOGLE_API_KEY)
         llm = genai.GenerativeModel('gemini-pro')
         status = "em risco" if risco == 1 else "estável"
-        prompt = f"Analise como consultor da Passos Mágicos: IDA:{dados['IDA']}, IEG:{dados['IEG']}, IPS:{dados['IPS']}, IPP:{dados['IPP']}, IPV:{dados['IPV']}. Risco: {probabilidade*100:.1f}%. Gere um acolhimento breve."
+        prompt = f"""
+        Você é um consultor pedagógico da Associação Passos Mágicos.
+        Analise os indicadores: IDA:{dados['IDA']}, IEG:{dados['IEG']}, IPS:{dados['IPS']}, IPP:{dados['IPP']}, IPV:{dados['IPV']}.
+        Risco detectado: {probabilidade*100:.1f}%. Status: {status}.
+        Escreva um comentário breve (3 frases) e acolhedor para a equipe de ensino.
+        """
         response = llm.generate_content(prompt)
         return response.text
     except:
-        return "ℹ️ Mentor Digital indisponível no momento."
+        return "ℹ️ O Mentor Digital está indisponível agora. Verifique se a chave da API está correta."
 
-# --- Interface Streamlit ---
-st.set_page_config(page_title="Passos Mágicos - Diagnóstico", layout="centered")
+# --- INTERFACE STREAMLIT ---
+st.set_page_config(page_title="Passos Mágicos - Diagnóstico", layout="centered", page_icon="🌱")
+
 st.title("🌱 Mentor Digital Passos Mágicos")
+st.markdown("Plataforma de Diagnóstico Preventivo de Defasagem Escolar")
 
 # Guia de Indicadores
 with st.expander("📖 Guia Rápido de Indicadores"):
@@ -62,45 +68,49 @@ with st.expander("📖 Guia Rápido de Indicadores"):
         st.write("**🔥 IEG:** Motivação e Frequência")
     with col_b:
         st.write("**❤️ IPS:** Relações e Emoções")
-        st.write("**✨ IPV:** Protagonismo (Brilho nos Olhos)")
+        st.write("**✨ IPV:** Protagonismo (Ponto de Virada)")
 
-# Formulário
+# Formulário de Entrada
 with st.form("predict_form"):
     st.subheader("Indicadores do Aluno")
     col1, col2 = st.columns(2)
     with col1:
-        ida = st.number_input("IDA (Acadêmico)", 0.0, 10.0, 7.0)
-        ieg = st.number_input("IEG (Engajamento)", 0.0, 10.0, 7.0)
-        ips = st.number_input("IPS (Socioemocional)", 0.0, 10.0, 7.0)
+        ida = st.number_input("IDA (Acadêmico)", 0.0, 10.0, 7.0, step=0.1)
+        ieg = st.number_input("IEG (Engajamento)", 0.0, 10.0, 7.0, step=0.1)
+        ips = st.number_input("IPS (Socioemocional)", 0.0, 10.0, 7.0, step=0.1)
     with col2:
-        ipp = st.number_input("IPP (Psicopedagógico)", 0.0, 10.0, 7.0)
-        ipv = st.number_input("IPV (Ponto de Virada)", 0.0, 10.0, 7.0)
+        ipp = st.number_input("IPP (Psicopedagógico)", 0.0, 10.0, 7.0, step=0.1)
+        ipv = st.number_input("IPV (Ponto de Virada)", 0.0, 10.0, 7.0, step=0.1)
+    
     submit = st.form_submit_button("Realizar Diagnóstico")
 
 if submit:
+    # 1. PREPARAÇÃO E REORDENAÇÃO (Garante a precisão do modelo)
     input_dict = {'IDA': ida, 'IEG': ieg, 'IPS': ips, 'IPP': ipp, 'IPV': ipv}
-    input_df = pd.DataFrame([input_dict], columns=features)
+    input_df = pd.DataFrame([input_dict])
+    input_df = input_df[features] # Força a ordem exata esperada pelo modelo treinado
+
+    # 2. PREDIÇÃO DO MODELO RANDOM FOREST
     prediction = model.predict(input_df)[0]
     prob = model.predict_proba(input_df)[0][1]
 
     st.divider()
 
-    # 1. DIAGNÓSTICO TÉCNICO
+    # 3. RESULTADO TÉCNICO
     if prediction == 1:
         st.error(f"⚠️ **Diagnóstico Técnico: Atenção Necessária**")
-        # EXPLICAÇÃO DOS DADOS (Cereja do bolo)
         st.warning(explicar_risco_tecnico(input_dict, prob))
     else:
         st.success(f"✅ **Diagnóstico Técnico: Desenvolvimento Estável**")
         st.info("O aluno apresenta segurança nos indicadores atuais.")
 
-    # 2. COMENTÁRIO IA (Opcional)
+    # 4. RESULTADO DA IA GENERATIVA (OPCIONAL)
     res_ia = gerar_comentario_ia(input_dict, prediction, prob)
     if res_ia:
-        with st.expander("✨ Ver Análise Humanizada do Mentor", expanded=True):
+        with st.expander("✨ Análise Humanizada do Mentor", expanded=True):
             st.write(res_ia)
     elif not GOOGLE_API_KEY:
-        st.info("💡 Para uma análise pedagógica detalhada via IA, configure a API Key na barra lateral.")
+        st.info("💡 Para receber uma análise humanizada detalhada, configure sua API Key na barra lateral.")
 
 st.sidebar.markdown("---")
-st.sidebar.caption("Projeto Datathon - Fase 5 | FIAP Pós-Tech")
+st.sidebar.caption("Datathon Fase 5 | FIAP Pós-Tech")
