@@ -94,7 +94,7 @@ if submit:
     prob_risco = model.predict_proba(input_df)[0][1]
     
     # AJUSTE DE SENSIBILIDADE: Se o risco for maior que 40%, já tratamos como Atenção Necessária
-    alerta_ativo = prob_risco >= 0.40
+    alerta_ativo = prob_risco >= 0.40 or prob_risco < 0.50 
 
     st.divider()
 
