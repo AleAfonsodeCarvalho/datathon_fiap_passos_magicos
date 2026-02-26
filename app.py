@@ -8,39 +8,40 @@ model = joblib.load('modelo_risco_passos.pkl')
 features = joblib.load('features_list.pkl')
 
 # Configuração da IA (Gemini)
-# DICA: No deploy, use st.secrets para esconder sua chave!
 GOOGLE_API_KEY = st.sidebar.text_input("Insira sua Gemini API Key", type="password")
 
 def gerar_comentario_ia(dados, risco, probabilidade):
     if not GOOGLE_API_KEY:
         return "Insira a chave da API no menu lateral para gerar um comentário humanizado."
 
-    genai.configure(api_key=GOOGLE_API_KEY)
-    llm = genai.GenerativeModel('gemini-pro')
+    # Início do bloco de tratamento de erros
+    try:
+        genai.configure(api_key=GOOGLE_API_KEY)
+        llm = genai.GenerativeModel('gemini-pro')
 
-    status = "em risco" if risco == 1 else "estável"
+        status = "em risco" if risco == 1 else "estável"
 
-    # O "Prompt" é o segredo para a IA ser humana
-    prompt = f"""
-    Você é um consultor pedagógico da Associação Passos Mágicos.
-    Analise os seguintes indicadores de um aluno:
-    - Desempenho Acadêmico (IDA): {dados['IDA']}
-    - Engajamento (IEG): {dados['IEG']}
-    - Socioemocional (IPS): {dados['IPS']}
-    - Psicopedagógico (IPP): {dados['IPP']}
-    - Ponto de Virada (IPV): {dados['IPV']}
+        prompt = f"""
+        Você é um consultor pedagógico da Associação Passos Mágicos.
+        Analise os seguintes indicadores de um aluno:
+        - Desempenho Acadêmico (IDA): {dados['IDA']}
+        - Engajamento (IEG): {dados['IEG']}
+        - Socioemocional (IPS): {dados['IPS']}
+        - Psicopedagógico (IPP): {dados['IPP']}
+        - Ponto de Virada (IPV): {dados['IPV']}
 
-    O modelo de IA classificou este aluno como {status} (Probabilidade de risco: {probabilidade*100:.1f}%).
+        O modelo de IA classificou este aluno como {status} (Probabilidade de risco: {probabilidade*100:.1f}%).
 
-    Escreva um breve comentário (máximo 4 frases) acolhedor e humanizado para a equipe pedagógica.
-    Incentive o foco no desenvolvimento do aluno e não apenas na nota.
-    Use um tom empático e motivador.
-    """
+        Escreva um breve comentário (máximo 4 frases) acolhedor e humanizado para a equipe pedagógica.
+        Incentive o foco no desenvolvimento do aluno e não apenas na nota.
+        Use um tom empático e motivador.
+        """
 
-    response = llm.generate_content(prompt)
-    return response.text
-except Exception as e:
-    return "ℹ️ O Mentor Digital está descansando. Tente novamente em alguns segundos."
+        response = llm.generate_content(prompt)
+        return response.text
+    
+    except Exception as e:
+        return "ℹ️ O Mentor Digital está descansando ou a chave da API é inválida. Tente novamente em instantes."
 
 # --- Interface Streamlit ---
 st.set_page_config(page_title="Passos Mágicos - IA", layout="centered")
@@ -56,7 +57,6 @@ with st.expander("📖 Guia Rápido de Indicadores"):
         st.write("**❤️ IPS:** Relações e Emoções")
         st.write("**✨ IPV:** Protagonismo (Brilho nos Olhos)")
 
-# (Aqui entra o formulário que já criamos anteriormente...)
 with st.form("predict_form"):
     st.subheader("Indicadores do Aluno")
     col1, col2 = st.columns(2)
@@ -76,17 +76,15 @@ if submit:
 
     st.divider()
 
-    # Exibe o resultado do Modelo
     if prediction == 1:
         st.error(f"⚠️ **Diagnóstico: Atenção Necessária**")
     else:
         st.success(f"✅ **Diagnóstico: Desenvolvimento Estável**")
 
-    # --- NOVIDADE: Bot de IA Generativa ---
     with st.expander("✨ Ver Comentário do Mentor Digital", expanded=True):
         with st.spinner("O Mentor está analisando os dados..."):
-            comentario = gerar_comentario_ia({'IDA': ida, 'IEG': ieg, 'IPS': ips, 'IPP': ipp, 'IPV': ipv}, prediction, prob)
-            st.write(comentario)
+            res_ia = gerar_comentario_ia({'IDA': ida, 'IEG': ieg, 'IPS': ips, 'IPP': ipp, 'IPV': ipv}, prediction, prob)
+            st.write(res_ia)
 
 st.sidebar.markdown("---")
 st.sidebar.caption("Esta IA utiliza dados históricos e o modelo Random Forest para apoio pedagógico.")
