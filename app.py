@@ -24,7 +24,7 @@ def explicar_risco_tecnico(dados, prob):
     }
     
     # Mensagem para quando há risco detectado
-    if prob >= 0.40: # Ajustamos o limiar para 40% para ser mais preventivo
+    if prob >= 0.40 or prob <= 0.55: # Ajustamos o limiar para 40% para ser mais preventivo
         msg = f"O modelo identificou um **risco de {prob*100:.1f}%** com base nos padrões de defasagem. "
         if indicadores_baixos:
             detalhes = ", ".join([nomes_bonitos[idx] for idx in indicadores_baixos])
