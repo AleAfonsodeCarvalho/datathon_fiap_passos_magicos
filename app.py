@@ -4,16 +4,15 @@ import pandas as pd
 import google.generativeai as genai
 
 # --- CARREGAMENTO DE ASSETS ---
-# Certifique-se de que esses arquivos estão na mesma pasta do GitHub
 model = joblib.load('modelo_risco_passos.pkl')
 features = joblib.load('features_list.pkl')
 
-# --- CONFIGURAÇÃO DA API KEY (EXCLUSIVAMENTE SIDEBAR) ---
+# --- CONFIGURAÇÃO DA API KEY (SIDEBAR) ---
 st.sidebar.header("Configurações de IA")
 GOOGLE_API_KEY = st.sidebar.text_input(
     "Insira sua Gemini API Key", 
     type="password", 
-    help="A chave é necessária apenas para o comentário humanizado do Mentor Digital."
+    help="Opcional: Necessária apenas para o comentário do Mentor Digital."
 )
 
 # --- FUNÇÃO 1: EXPLICAÇÃO TÉCNICA (Lógica de Alerta) ---
@@ -24,34 +23,36 @@ def explicar_risco_tecnico(dados, prob):
         'IPS': 'Socioemocional', 'IPP': 'Psicopedagógico', 'IPV': 'Ponto de Virada'
     }
     
-    if prob > 0.5:
-        msg = f"O modelo identificou um **risco de {prob*100:.1f}%** baseado nos padrões históricos. "
+    # Mensagem para quando há risco detectado
+    if prob >= 0.40: # Ajustamos o limiar para 40% para ser mais preventivo
+        msg = f"O modelo identificou um **risco de {prob*100:.1f}%** com base nos padrões de defasagem. "
         if indicadores_baixos:
             detalhes = ", ".join([nomes_bonitos[idx] for idx in indicadores_baixos])
-            msg += f"Este alerta foi gerado devido à baixa pontuação em: **{detalhes}**. "
-        msg += "Recomenda-se atenção especial a estes pontos para apoiar o desenvolvimento do aluno."
+            msg += f"Este diagnóstico técnico sugere atenção devido às oscilações em: **{detalhes}**. "
+        msg += "Recomenda-se um olhar preventivo para apoiar a trajetória do aluno."
     else:
-        msg = "Os indicadores atuais mantêm o aluno dentro de uma zona de segurança estatística."
+        msg = "Os indicadores atuais refletem um cenário de estabilidade e segurança no desenvolvimento."
     return msg
 
 # --- FUNÇÃO 2: COMENTÁRIO HUMANIZADO (IA) ---
-def gerar_comentario_ia(dados, risco, probabilidade):
+def gerar_comentario_ia(dados, risco_ajustado, probabilidade):
     if not GOOGLE_API_KEY or GOOGLE_API_KEY.strip() == "":
         return None
     try:
         genai.configure(api_key=GOOGLE_API_KEY)
         llm = genai.GenerativeModel('gemini-pro')
-        status = "em risco" if risco == 1 else "estável"
+        # Usamos o status baseado no nosso novo limiar de 40%
+        status = "em atenção preventiva" if risco_ajustado else "estável"
         prompt = f"""
         Você é um consultor pedagógico da Associação Passos Mágicos.
         Analise os indicadores: IDA:{dados['IDA']}, IEG:{dados['IEG']}, IPS:{dados['IPS']}, IPP:{dados['IPP']}, IPV:{dados['IPV']}.
         Risco detectado: {probabilidade*100:.1f}%. Status: {status}.
-        Escreva um comentário breve (3 frases) e acolhedor para a equipe de ensino.
+        Escreva um comentário breve (3 frases) e motivador para a equipe de ensino.
         """
         response = llm.generate_content(prompt)
         return response.text
     except:
-        return "ℹ️ O Mentor Digital está indisponível agora. Verifique se a chave da API está correta."
+        return "ℹ️ O Mentor Digital está indisponível agora. O diagnóstico técnico acima permanece válido."
 
 # --- INTERFACE STREAMLIT ---
 st.set_page_config(page_title="Passos Mágicos - Diagnóstico", layout="centered", page_icon="🌱")
@@ -59,7 +60,6 @@ st.set_page_config(page_title="Passos Mágicos - Diagnóstico", layout="centered
 st.title("🌱 Mentor Digital Passos Mágicos")
 st.markdown("Plataforma de Diagnóstico Preventivo de Defasagem Escolar")
 
-# Guia de Indicadores
 with st.expander("📖 Guia Rápido de Indicadores"):
     col_a, col_b = st.columns(2)
     with col_a:
@@ -70,7 +70,6 @@ with st.expander("📖 Guia Rápido de Indicadores"):
         st.write("**❤️ IPS:** Relações e Emoções")
         st.write("**✨ IPV:** Protagonismo (Ponto de Virada)")
 
-# Formulário de Entrada
 with st.form("predict_form"):
     st.subheader("Indicadores do Aluno")
     col1, col2 = st.columns(2)
@@ -85,27 +84,30 @@ with st.form("predict_form"):
     submit = st.form_submit_button("Realizar Diagnóstico")
 
 if submit:
-    # 1. PREPARAÇÃO E REORDENAÇÃO (Garante a precisão do modelo)
+    # 1. PREPARAÇÃO E REORDENAÇÃO
     input_dict = {'IDA': ida, 'IEG': ieg, 'IPS': ips, 'IPP': ipp, 'IPV': ipv}
     input_df = pd.DataFrame([input_dict])
-    input_df = input_df[features] # Força a ordem exata esperada pelo modelo treinado
+    input_df = input_df[features] 
 
-    # 2. PREDIÇÃO DO MODELO RANDOM FOREST
-    prediction = model.predict(input_df)[0]
-    prob = model.predict_proba(input_df)[0][1]
+    # 2. PREDIÇÃO
+    # Pegamos a probabilidade bruta da classe 1 (risco)
+    prob_risco = model.predict_proba(input_df)[0][1]
+    
+    # AJUSTE DE SENSIBILIDADE: Se o risco for maior que 40%, já tratamos como Atenção Necessária
+    alerta_ativo = prob_risco >= 0.40
 
     st.divider()
 
-    # 3. RESULTADO TÉCNICO
-    if prediction == 1:
+    # 3. RESULTADO TÉCNICO COM LIMIAR CUSTOMIZADO
+    if alerta_ativo:
         st.error(f"⚠️ **Diagnóstico Técnico: Atenção Necessária**")
-        st.warning(explicar_risco_tecnico(input_dict, prob))
+        st.warning(explicar_risco_tecnico(input_dict, prob_risco))
     else:
         st.success(f"✅ **Diagnóstico Técnico: Desenvolvimento Estável**")
         st.info("O aluno apresenta segurança nos indicadores atuais.")
 
-    # 4. RESULTADO DA IA GENERATIVA (OPCIONAL)
-    res_ia = gerar_comentario_ia(input_dict, prediction, prob)
+    # 4. RESULTADO DA IA
+    res_ia = gerar_comentario_ia(input_dict, alerta_ativo, prob_risco)
     if res_ia:
         with st.expander("✨ Análise Humanizada do Mentor", expanded=True):
             st.write(res_ia)
