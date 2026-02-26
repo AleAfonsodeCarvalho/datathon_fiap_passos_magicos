@@ -7,41 +7,47 @@ import google.generativeai as genai
 model = joblib.load('modelo_risco_passos.pkl')
 features = joblib.load('features_list.pkl')
 
-# --- CONFIGURAÇÃO DA API KEY (SECRETS OU SIDEBAR) ---
-# Tenta buscar no Secrets do Streamlit Cloud primeiro
+# --- CONFIGURAÇÃO DA API KEY ---
 if "GEMINI_KEY" in st.secrets:
     GOOGLE_API_KEY = st.secrets["GEMINI_KEY"]
 else:
-    # Caso não esteja no Secrets, permite entrada manual na barra lateral
-    GOOGLE_API_KEY = st.sidebar.text_input("Insira sua Gemini API Key (Opcional)", type="password", help="A chave é necessária apenas para gerar o comentário humanizado.")
+    GOOGLE_API_KEY = st.sidebar.text_input("Insira sua Gemini API Key (Opcional)", type="password")
 
+# --- FUNÇÃO 1: EXPLICAÇÃO TÉCNICA (Lógica de Negócio) ---
+def explicar_risco_tecnico(dados, prob):
+    indicadores_baixos = [k for k, v in dados.items() if v < 7.0]
+    
+    # Tradução dos termos para o usuário
+    nomes = {
+        'IDA': 'Desempenho Acadêmico', 'IEG': 'Engajamento',
+        'IPS': 'Socioemocional', 'IPP': 'Psicopedagógico', 'IPV': 'Ponto de Virada'
+    }
+    
+    if prob > 0.5:
+        msg = f"O modelo identificou um **risco de {prob*100:.1f}%** baseado no cruzamento histórico de dados. "
+        if indicadores_baixos:
+            detalhes = ", ".join([nomes[idx] for idx in indicadores_baixos])
+            msg += f"Este alerta foi acionado principalmente pela fragilidade em: **{detalhes}**. "
+        msg += "Recomenda-se uma intervenção preventiva para evitar o distanciamento do aluno."
+    else:
+        msg = "Os indicadores mostram que, apesar de possíveis oscilações, o aluno mantém uma trajetória de segurança estatística."
+    
+    return msg
+
+# --- FUNÇÃO 2: COMENTÁRIO HUMANIZADO (IA) ---
 def gerar_comentario_ia(dados, risco, probabilidade):
-    # Se não houver chave, retorna uma mensagem informativa sem erro
-    if not GOOGLE_API_KEY or GOOGLE_API_KEY == "":
-        return "💡 O diagnóstico técnico foi concluído! Para receber um comentário humanizado da nossa IA, insira uma API Key válida no menu lateral."
+    if not GOOGLE_API_KEY:
+        return None # Silencioso se não houver chave
 
     try:
         genai.configure(api_key=GOOGLE_API_KEY)
         llm = genai.GenerativeModel('gemini-pro')
-
         status = "em risco" if risco == 1 else "estável"
-
-        prompt = f"""
-        Você é um consultor pedagógico da Associação Passos Mágicos.
-        Analise os seguintes indicadores de um aluno:
-        - IDA: {dados['IDA']}, IEG: {dados['IEG']}, IPS: {dados['IPS']}, IPP: {dados['IPP']}, IPV: {dados['IPV']}
-
-        O modelo classificou este aluno como {status} (Probabilidade de risco: {probabilidade*100:.1f}%).
-
-        Escreva um breve comentário (máximo 4 frases) acolhedor e humanizado para a equipe pedagógica.
-        Incentive o foco no desenvolvimento do aluno e não apenas na nota. Tonalidade empática.
-        """
-
+        prompt = f"Analise como consultor da Passos Mágicos: IDA:{dados['IDA']}, IEG:{dados['IEG']}, IPS:{dados['IPS']}, IPP:{dados['IPP']}, IPV:{dados['IPV']}. Risco: {probabilidade*100:.1f}%. Gere um acolhimento breve."
         response = llm.generate_content(prompt)
         return response.text
-    
-    except Exception:
-        return "ℹ️ Não foi possível conectar ao Mentor Digital. Verifique sua chave ou tente novamente mais tarde. O diagnóstico técnico acima permanece válido."
+    except:
+        return "ℹ️ Mentor Digital indisponível no momento."
 
 # --- Interface Streamlit ---
 st.set_page_config(page_title="Passos Mágicos - Diagnóstico", layout="centered")
@@ -58,7 +64,7 @@ with st.expander("📖 Guia Rápido de Indicadores"):
         st.write("**❤️ IPS:** Relações e Emoções")
         st.write("**✨ IPV:** Protagonismo (Brilho nos Olhos)")
 
-# Formulário de Entrada
+# Formulário
 with st.form("predict_form"):
     st.subheader("Indicadores do Aluno")
     col1, col2 = st.columns(2)
@@ -72,29 +78,29 @@ with st.form("predict_form"):
     submit = st.form_submit_button("Realizar Diagnóstico")
 
 if submit:
-    # 1. PROCESSAMENTO DO MODELO (Sempre executa)
-    input_data = pd.DataFrame([[ida, ieg, ips, ipp, ipv]], columns=features)
-    prediction = model.predict(input_data)[0]
-    prob = model.predict_proba(input_data)[0][1]
+    input_dict = {'IDA': ida, 'IEG': ieg, 'IPS': ips, 'IPP': ipp, 'IPV': ipv}
+    input_df = pd.DataFrame([input_dict], columns=features)
+    prediction = model.predict(input_df)[0]
+    prob = model.predict_proba(input_df)[0][1]
 
     st.divider()
 
-    # Exibe o resultado visual do diagnóstico técnico
+    # 1. DIAGNÓSTICO TÉCNICO
     if prediction == 1:
         st.error(f"⚠️ **Diagnóstico Técnico: Atenção Necessária**")
-        st.info(f"Probabilidade de risco calculada pelo modelo: {prob*100:.1f}%")
+        # EXPLICAÇÃO DOS DADOS (Cereja do bolo)
+        st.warning(explicar_risco_tecnico(input_dict, prob))
     else:
         st.success(f"✅ **Diagnóstico Técnico: Desenvolvimento Estável**")
-        st.info(f"O aluno apresenta segurança nos indicadores atuais.")
+        st.info("O aluno apresenta segurança nos indicadores atuais.")
 
-    # 2. CHAMADA DA IA (Opcional/Condicional)
-    with st.expander("✨ Comentário do Mentor Digital", expanded=True):
-        if GOOGLE_API_KEY:
-            with st.spinner("O Mentor está analisando os dados..."):
-                res_ia = gerar_comentario_ia({'IDA': ida, 'IEG': ieg, 'IPS': ips, 'IPP': ipp, 'IPV': ipv}, prediction, prob)
-                st.write(res_ia)
-        else:
-            st.write("💡 Para receber uma análise humanizada detalhada, configure a chave de API no menu lateral.")
+    # 2. COMENTÁRIO IA (Opcional)
+    res_ia = gerar_comentario_ia(input_dict, prediction, prob)
+    if res_ia:
+        with st.expander("✨ Ver Análise Humanizada do Mentor", expanded=True):
+            st.write(res_ia)
+    elif not GOOGLE_API_KEY:
+        st.info("💡 Para uma análise pedagógica detalhada via IA, configure a API Key na barra lateral.")
 
 st.sidebar.markdown("---")
 st.sidebar.caption("Projeto Datathon - Fase 5 | FIAP Pós-Tech")
