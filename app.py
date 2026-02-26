@@ -7,14 +7,19 @@ import google.generativeai as genai
 model = joblib.load('modelo_risco_passos.pkl')
 features = joblib.load('features_list.pkl')
 
-# Configuração da IA (Gemini)
-GOOGLE_API_KEY = st.sidebar.text_input("Insira sua Gemini API Key", type="password")
+# --- CONFIGURAÇÃO DA API KEY (SECRETS OU SIDEBAR) ---
+# Tenta buscar no Secrets do Streamlit Cloud primeiro
+if "GEMINI_KEY" in st.secrets:
+    GOOGLE_API_KEY = st.secrets["GEMINI_KEY"]
+else:
+    # Caso não esteja no Secrets, permite entrada manual na barra lateral
+    GOOGLE_API_KEY = st.sidebar.text_input("Insira sua Gemini API Key (Opcional)", type="password", help="A chave é necessária apenas para gerar o comentário humanizado.")
 
 def gerar_comentario_ia(dados, risco, probabilidade):
-    if not GOOGLE_API_KEY:
-        return "Insira a chave da API no menu lateral para gerar um comentário humanizado."
+    # Se não houver chave, retorna uma mensagem informativa sem erro
+    if not GOOGLE_API_KEY or GOOGLE_API_KEY == "":
+        return "💡 O diagnóstico técnico foi concluído! Para receber um comentário humanizado da nossa IA, insira uma API Key válida no menu lateral."
 
-    # Início do bloco de tratamento de erros
     try:
         genai.configure(api_key=GOOGLE_API_KEY)
         llm = genai.GenerativeModel('gemini-pro')
@@ -24,29 +29,25 @@ def gerar_comentario_ia(dados, risco, probabilidade):
         prompt = f"""
         Você é um consultor pedagógico da Associação Passos Mágicos.
         Analise os seguintes indicadores de um aluno:
-        - Desempenho Acadêmico (IDA): {dados['IDA']}
-        - Engajamento (IEG): {dados['IEG']}
-        - Socioemocional (IPS): {dados['IPS']}
-        - Psicopedagógico (IPP): {dados['IPP']}
-        - Ponto de Virada (IPV): {dados['IPV']}
+        - IDA: {dados['IDA']}, IEG: {dados['IEG']}, IPS: {dados['IPS']}, IPP: {dados['IPP']}, IPV: {dados['IPV']}
 
-        O modelo de IA classificou este aluno como {status} (Probabilidade de risco: {probabilidade*100:.1f}%).
+        O modelo classificou este aluno como {status} (Probabilidade de risco: {probabilidade*100:.1f}%).
 
         Escreva um breve comentário (máximo 4 frases) acolhedor e humanizado para a equipe pedagógica.
-        Incentive o foco no desenvolvimento do aluno e não apenas na nota.
-        Use um tom empático e motivador.
+        Incentive o foco no desenvolvimento do aluno e não apenas na nota. Tonalidade empática.
         """
 
         response = llm.generate_content(prompt)
         return response.text
     
-    except Exception as e:
-        return "ℹ️ O Mentor Digital está descansando ou a chave da API é inválida. Tente novamente em instantes."
+    except Exception:
+        return "ℹ️ Não foi possível conectar ao Mentor Digital. Verifique sua chave ou tente novamente mais tarde. O diagnóstico técnico acima permanece válido."
 
 # --- Interface Streamlit ---
-st.set_page_config(page_title="Passos Mágicos - IA", layout="centered")
+st.set_page_config(page_title="Passos Mágicos - Diagnóstico", layout="centered")
 st.title("🌱 Mentor Digital Passos Mágicos")
 
+# Guia de Indicadores
 with st.expander("📖 Guia Rápido de Indicadores"):
     col_a, col_b = st.columns(2)
     with col_a:
@@ -57,6 +58,7 @@ with st.expander("📖 Guia Rápido de Indicadores"):
         st.write("**❤️ IPS:** Relações e Emoções")
         st.write("**✨ IPV:** Protagonismo (Brilho nos Olhos)")
 
+# Formulário de Entrada
 with st.form("predict_form"):
     st.subheader("Indicadores do Aluno")
     col1, col2 = st.columns(2)
@@ -67,24 +69,32 @@ with st.form("predict_form"):
     with col2:
         ipp = st.number_input("IPP (Psicopedagógico)", 0.0, 10.0, 7.0)
         ipv = st.number_input("IPV (Ponto de Virada)", 0.0, 10.0, 7.0)
-    submit = st.form_submit_button("Analisar Desempenho")
+    submit = st.form_submit_button("Realizar Diagnóstico")
 
 if submit:
+    # 1. PROCESSAMENTO DO MODELO (Sempre executa)
     input_data = pd.DataFrame([[ida, ieg, ips, ipp, ipv]], columns=features)
     prediction = model.predict(input_data)[0]
     prob = model.predict_proba(input_data)[0][1]
 
     st.divider()
 
+    # Exibe o resultado visual do diagnóstico técnico
     if prediction == 1:
-        st.error(f"⚠️ **Diagnóstico: Atenção Necessária**")
+        st.error(f"⚠️ **Diagnóstico Técnico: Atenção Necessária**")
+        st.info(f"Probabilidade de risco calculada pelo modelo: {prob*100:.1f}%")
     else:
-        st.success(f"✅ **Diagnóstico: Desenvolvimento Estável**")
+        st.success(f"✅ **Diagnóstico Técnico: Desenvolvimento Estável**")
+        st.info(f"O aluno apresenta segurança nos indicadores atuais.")
 
-    with st.expander("✨ Ver Comentário do Mentor Digital", expanded=True):
-        with st.spinner("O Mentor está analisando os dados..."):
-            res_ia = gerar_comentario_ia({'IDA': ida, 'IEG': ieg, 'IPS': ips, 'IPP': ipp, 'IPV': ipv}, prediction, prob)
-            st.write(res_ia)
+    # 2. CHAMADA DA IA (Opcional/Condicional)
+    with st.expander("✨ Comentário do Mentor Digital", expanded=True):
+        if GOOGLE_API_KEY:
+            with st.spinner("O Mentor está analisando os dados..."):
+                res_ia = gerar_comentario_ia({'IDA': ida, 'IEG': ieg, 'IPS': ips, 'IPP': ipp, 'IPV': ipv}, prediction, prob)
+                st.write(res_ia)
+        else:
+            st.write("💡 Para receber uma análise humanizada detalhada, configure a chave de API no menu lateral.")
 
 st.sidebar.markdown("---")
-st.sidebar.caption("Esta IA utiliza dados históricos e o modelo Random Forest para apoio pedagógico.")
+st.sidebar.caption("Projeto Datathon - Fase 5 | FIAP Pós-Tech")
