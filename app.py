@@ -39,10 +39,22 @@ def gerar_comentario_ia(dados, risco, probabilidade):
 
     response = llm.generate_content(prompt)
     return response.text
+except Exception as e:
+    return "ℹ️ O Mentor Digital está descansando. Tente novamente em alguns segundos."
 
 # --- Interface Streamlit ---
 st.set_page_config(page_title="Passos Mágicos - IA", layout="centered")
 st.title("🌱 Mentor Digital Passos Mágicos")
+
+with st.expander("📖 Guia Rápido de Indicadores"):
+    col_a, col_b = st.columns(2)
+    with col_a:
+        st.write("**📚 IDA:** Desempenho Escolar")
+        st.write("**🧠 IPP:** Processo de Aprendizado")
+        st.write("**🔥 IEG:** Motivação e Frequência")
+    with col_b:
+        st.write("**❤️ IPS:** Relações e Emoções")
+        st.write("**✨ IPV:** Protagonismo (Brilho nos Olhos)")
 
 # (Aqui entra o formulário que já criamos anteriormente...)
 with st.form("predict_form"):
