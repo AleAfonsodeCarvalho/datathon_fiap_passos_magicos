@@ -47,7 +47,7 @@ if submit:
     col_texto, col_rosca, col_radar = st.columns([1, 1, 1.5])
 
     with col_texto:
-        if if prob >= 0.40 or prob <= 0.55:
+        if prob >= 0.40 or prob <= 0.55:
             st.error("⚠️ **Atenção Necessária**")
             st.write(f"O modelo detectou um risco de {prob_risco*100:.1f}%.")
         else:
