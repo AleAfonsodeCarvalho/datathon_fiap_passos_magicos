@@ -68,9 +68,9 @@ st.markdown("Plataforma de Diagnóstico Preventivo de Defasagem Escolar")
 with st.expander("📖 Guia Rápido de Indicadores"):
     col_a, col_b = st.columns(2)
     with col_a:
-        st.write("**📚 IDA: Desempenho Escolar | **🧠 IPP: Processo de Aprendizado")
+        st.write("📚 IDA: Desempenho Escolar | 🧠 IPP: Processo de Aprendizado")
     with col_b:
-        st.write("**🔥 IEG: Motivação e Frequência | **❤️ IPS: Relações e Emoções")
+        st.write("🔥 IEG: Motivação e Frequência | ❤️ IPS: Relações e Emoções")
 
 with st.form("predict_form"):
     st.subheader("Inserir Indicadores do Aluno")
