@@ -68,9 +68,9 @@ st.markdown("Plataforma de Diagnóstico Preventivo de Defasagem Escolar")
 with st.expander("📖 Guia Rápido de Indicadores"):
     col_a, col_b = st.columns(2)
     with col_a:
-        st.write("**📚 IDA:** Desempenho Escolar | **🧠 IPP:** Processo de Aprendizado")
+        st.write("**📚 IDA: Desempenho Escolar | **🧠 IPP: Processo de Aprendizado")
     with col_b:
-        st.write("**🔥 IEG:** Motivação e Frequência | **❤️ IPS:** Relações e Emoções")
+        st.write("**🔥 IEG: Motivação e Frequência | **❤️ IPS: Relações e Emoções")
 
 with st.form("predict_form"):
     st.subheader("Inserir Indicadores do Aluno")
@@ -135,3 +135,25 @@ if submit:
             st.write(res_ia)
     elif not GOOGLE_API_KEY:
         st.info("💡 Insira sua API Key na lateral para habilitar o comentário da IA.")
+        
+    # --- 4. GLOSSÁRIO E INTERPRETAÇÃO (Abaixo de tudo) ---
+    st.markdown("---")
+    with st.expander("❓ Entenda como ler este diagnóstico"):
+        st.markdown("""
+        ### **O que é o Índice de Estabilidade?**
+        Este índice representa a segurança do desenvolvimento do aluno. Ele é o inverso da probabilidade de risco: 
+        se o modelo detecta **20% de risco**, o aluno possui **80% de estabilidade**. 
+        
+        * **Acima de 60%:** Trajetória estável. O foco deve ser a manutenção e excelência.
+        * **Abaixo de 60%:** Alerta preventivo. Indica que, estatisticamente, o aluno apresenta padrões que precedem a defasagem escolar.
+
+        ### **Como ler o Gráfico Radar?**
+        O gráfico radar compara o aluno atual com dois referenciais:
+        1.  **Linha Azul (Este Aluno):** Desempenho atual inserido.
+        2.  **Linha Pontilhada (Média Histórica):** Desempenho médio de todos os alunos desde o início do programa.
+        3.  **Linha Verde (Média 2024):** O padrão de desempenho do último ano letivo.
+        
+        *Se a linha azul estiver "para dentro" das outras linhas, aquele indicador específico (ex: IEG ou IPS) precisa de atenção imediata.*
+        """)
+
+  
