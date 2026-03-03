@@ -90,7 +90,7 @@ if submit:
     
     # Sensibilidade: Risco acima de 40% dispara o alerta
     alerta_ativo = prob_risco >= 0.40
-    seguranca = (1 - prob_risco) * 100
+    seguranca = (prob_risco) * 100
 
     st.divider()
 
