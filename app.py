@@ -155,5 +155,7 @@ if submit:
         
         *Se a linha azul estiver "para dentro" das outras linhas, aquele indicador específico (ex: IEG ou IPS) precisa de atenção imediata.*
         """)
+        teste = pd.DataFrame([[7.8, 8.4, 7.0, 7.0, 7.0]], columns=features)
+print(model.predict_proba(teste))
 
   
