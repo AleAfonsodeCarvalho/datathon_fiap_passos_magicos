@@ -82,4 +82,72 @@ with st.form("predict_form"):
 
 if submit:
     # 1. CÁLCULOS
-    input_dict = {'IDA': ida, 'IEG': ieg, 'IPS': ips,
+    input_dict = {'IDA': ida, 'IEG': ieg, 'IPS': ips, 'IPP': ipp, 'IPV': ipv}
+    input_df = pd.DataFrame([input_dict])[features]
+    
+    # Probabilidade vinda do modelo (Classe 1 = Risco)
+    prob_risco_decimal = model.predict_proba(input_df)[0][1]
+    
+    porcentagem_risco = prob_risco_decimal * 100
+    porcentagem_estabilidade = 100 - porcentagem_risco
+    
+    # NOVOS LIMITES DE ALERTA:
+    # < 0.50: Verde | 0.50 a 0.80: Amarelo | > 0.80: Vermelho
+    alerta_critico = prob_risco_decimal >= 0.80
+    atencao_moderada = 0.50 <= prob_risco_decimal < 0.80
+
+    st.divider()
+
+    # --- 2. RESULTADOS VISUAIS ---
+    col_texto, col_rosca, col_radar = st.columns([1.2, 1, 1.5])
+
+    with col_texto:
+        if alerta_critico:
+            st.error("⚠️ **Diagnóstico: Atenção Necessária**")
+            st.warning(explicar_resultado(input_dict, prob_risco_decimal))
+        elif atencao_moderada:
+            st.warning("🟡 **Diagnóstico: Observação Preventiva**")
+            st.info(explicar_resultado(input_dict, prob_risco_decimal))
+        else:
+            st.success("✅ **Diagnóstico: Desenvolvimento Estável**")
+            st.info(explicar_resultado(input_dict, prob_risco_decimal))
+
+    with col_rosca:
+        # Definindo a cor da rosca dinamicamente
+        cor_grafico = '#2ecc71' # Verde
+        if alerta_critico: cor_grafico = '#e74c3c' # Vermelho
+        elif atencao_moderada: cor_grafico = '#f1c40f' # Amarelo
+
+        fig_rosca = go.Figure(go.Pie(
+            values=[porcentagem_estabilidade, porcentagem_risco],
+            labels=['Estabilidade', 'Risco'],
+            hole=.7,
+            marker_colors=[cor_grafico, '#f0f2f6'], # Cor ativa vs Fundo cinza
+            textinfo='none',
+            sort=False
+        ))
+        fig_rosca.update_layout(
+            showlegend=False, height=250, margin=dict(t=0, b=0, l=0, r=0),
+            annotations=[dict(text=f'{porcentagem_estabilidade:.0f}%', x=0.5, y=0.5, font_size=30, showarrow=False)]
+        )
+        st.plotly_chart(fig_rosca, use_container_width=True)
+        st.caption("<center>Índice de Estabilidade</center>", unsafe_allow_html=True)
+
+    with col_radar:
+        categories = ['IDA', 'IEG', 'IPS', 'IPP', 'IPV']
+        fig_radar = go.Figure()
+        fig_radar.add_trace(go.Scatterpolar(r=[ida, ieg, ips, ipp, ipv], theta=categories, fill='toself', name='Este Aluno'))
+        fig_radar.add_trace(go.Scatterpolar(r=[baselines['historica'][c] for c in categories], theta=categories, name='Média Histórica', line_dash='dot'))
+        fig_radar.add_trace(go.Scatterpolar(r=[baselines['2024'][c] for c in categories], theta=categories, name='Média 2024', line_color='green'))
+        fig_radar.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 10])), height=350, margin=dict(t=50, b=20, l=80, r=80))
+        st.plotly_chart(fig_radar, use_container_width=True)
+
+    # --- 3. COMENTÁRIO IA ---
+    res_ia = gerar_comentario_ia(input_dict, alerta_critico, prob_risco_decimal, GOOGLE_API_KEY)
+    if res_ia:
+        with st.expander("✨ Análise Humanizada do Mentor", expanded=True):
+            st.write(res_ia)
+
+# --- 4. RODAPÉ ---
+st.markdown("---")
+st.caption("O Índice de Estabilidade calcula a probabilidade estatística de continuidade do sucesso escolar com base no histórico da associação.")
