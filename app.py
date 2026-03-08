@@ -87,7 +87,7 @@ if st.button("Executar Análise de Risco", use_container_width=True):
             showlegend=False, height=250, margin=dict(l=10, r=10, t=10, b=10)
         )
         st.plotly_chart(fig_donut, use_container_width=True)
-        st.markdown(f"<h3 style='text-align: center; color: {cor_status};'>{status_texto}</h3>", unsafe_allow_color=True)
+        st.markdown(f"<h3 style='text-align: center; color: {cor_status};'>{status_texto}</h3>", unsafe_allow_html=True)
 
         # 4. Plano de Ação Automático
         ponto_critico = min(input_data, key=input_data.get)
