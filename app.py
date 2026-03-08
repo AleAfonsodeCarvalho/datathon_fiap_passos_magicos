@@ -168,7 +168,7 @@ if st.button("Executar Análise de Risco", use_container_width=True):
             with st.container(border=True):
             # Lógica de Alerta de Vulnerabilidade Silenciosa
           # --- BLOCO CORRIGIDO E ALINHADO ---
-with st.container(border=True):
+    with st.container(border=True):
     # Primeiro nível: Checagem de vulnerabilidade silenciosa (IPS/IPP)
     if prob_risco <= 0.3 and (input_data['IPS'] < 5 or input_data['IPP'] < 5):
         st.warning("⚠️ **Vulnerabilidade Silenciosa Detectada**")
