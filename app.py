@@ -49,7 +49,7 @@ if submit:
     with col_texto:
         if  prob_risco < 0.7:
             st.error("⚠️ **Atenção Necessária**")
-            st.write(f"O modelo detectou um risco de {prob_risco*100:.1f}.")
+            st.write(f"O modelo detectou um risco de {prob_risco*100:.1f}%.")
         else:
             st.success("✅ **Desenvolvimento Estável**")
             st.write("O aluno segue em trajetória segura.")
