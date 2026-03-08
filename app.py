@@ -9,10 +9,10 @@ st.set_page_config(page_title="Passos Mágicos - Mentor Digital", layout="wide",
 # CSS personalizado
 st.markdown("""
     <style>
-        .stApp { background-color: #F2F2F2; color: #1E3A8A; }
+        .stApp { background-color: #FFFFFF; color: #1E3A8A; }
         h1, h2, h3 { color: #1E3A8A !important; font-weight: 800; }
         div.stButton > button:first-child {
-            background-color: #FFC107; color: #1E3A8A; border-radius: 10px; border: none;
+            background-color: #FFC107; color: #1E3A8A; border-radius: 12px; border: none;
             font-weight: bold; height: 3em; transition: 0.3s;
         }
         div.stButton > button:first-child:hover { background-color: #1E3A8A; color: #FFFFFF; }
