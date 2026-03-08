@@ -3,19 +3,10 @@ import pandas as pd
 import joblib
 import plotly.graph_objects as go
 
-logo_passos = "passos_magico_logo.png"
-
-# Configuração da Interface (o ícone da aba do navegador ainda precisa de um emoji ou imagem carregada)
+# 1. Configuração da Interface (Sempre a primeira função de UI)
 st.set_page_config(page_title="Passos Mágicos - Mentor Digital", layout="wide", page_icon="🪄")
-# Criando um cabeçalho com o Logo e o Título lado a lado
-col_logo, col_titulo = st.columns([1, 4])
 
-with col_logo:
-    st.image(logo_passos, width=150) # Ajuste a largura conforme necessário
-
-
-
-# 1. Carregamento dos artefatos processados
+# 2. Carregamento dos artefatos processados
 @st.cache_resource
 def load_models():
     # Carregando os arquivos enviados: modelo, lista de features e médias históricas
@@ -26,43 +17,40 @@ def load_models():
 
 model, features, medias = load_models()
 
-# Configuração da Interface
-# Configuração da Aba do Navegador (o ícone da aba ainda precisa ser emoji ou objeto de imagem)
-
-
-# --- CABEÇALHO COM LOGO PERSONALIZADO ---
-# Criamos duas colunas: uma estreita para o logo e uma larga para o título
+# --- CABEÇALHO COM LOGO PERSONALIZADO (Apenas uma vez) ---
 col_logo, col_titulo = st.columns([1, 5])
 
 with col_logo:
-    # O arquivo deve estar na raiz do seu repositório no GitHub
     try:
+        # Tenta carregar o logo do repositório
         st.image("passos_magico_logo.png", width=120)
     except:
-        st.write("🚀") # Fallback caso a imagem não seja encontrada
+        # Caso o arquivo não seja encontrado no GitHub
+        st.write("🚀")
 
 with col_titulo:
-    # Markdown para alinhar o título verticalmente com o logo
     st.markdown("""
         <style>
             .titulo-header {
                 margin-top: 10px;
-                color: #1E3A8A; /* Cor azul escuro opcional */
+                color: #1E3A8A;
             }
         </style>
         <h1 class='titulo-header'>Mentor Digital: Analisador de Risco de Defasagem</h1>
     """, unsafe_allow_html=True)
 
 st.markdown("Esta ferramenta auxilia na identificação precoce de alunos em risco utilizando indicadores da **Associação Passos Mágicos**.")
+
+# --- GLOSSÁRIO ---
 with st.expander("📖 Glossário: Entenda os Indicadores (INDE)"):
     st.markdown("""
     Os indicadores abaixo compõem o **Índice de Desenvolvimento Educacional (INDE)**:
     
-    * **IDA (Índice de Desempenho Acadêmico):** Média das notas nas disciplinas principais (Português e Matemática).
-    * **IEG (Índice de Engajamento):** Mede o compromisso com tarefas, presença e participação.
-    * **IPS (Índice Psicossocial):** Bem-estar emocional e contexto familiar (avaliado pela Psicologia).
-    * **IPP (Índice de Psicopedagogia):** Evolução cognitiva e superação de barreiras de aprendizagem.
-    * **IPV (Índice de Ponto de Virada):** Maturidade e autonomia para o desenvolvimento independente.
+    * **IDA:** Média das notas nas disciplinas principais (Português e Matemática).
+    * **IEG:** Mede o compromisso com tarefas, presença e participação.
+    * **IPS:** Bem-estar emocional e contexto familiar.
+    * **IPP:** Evolução cognitiva e superação de barreiras de aprendizagem.
+    * **IPV:** Maturidade e autonomia para o desenvolvimento independente.
     """)
 
 st.divider()
