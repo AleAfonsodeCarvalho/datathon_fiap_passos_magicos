@@ -29,14 +29,33 @@ def load_models():
 model, features, medias = load_models()
 
 # Configuração da Interface
-st.set_page_config(page_title="Passos Mágicos - Mentor Digital", layout="wide")
+# Configuração da Aba do Navegador (o ícone da aba ainda precisa ser emoji ou objeto de imagem)
+st.set_page_config(page_title="Passos Mágicos - Mentor Digital", layout="wide", page_icon="🪄")
 
-st.markdown("""
-Esta ferramenta auxilia na identificação precoce de alunos em risco, utilizando os indicadores 
-acadêmicos, psicossociais e de engajamento da **Associação Passos Mágicos**.
-""")
+# --- CABEÇALHO COM LOGO PERSONALIZADO ---
+# Criamos duas colunas: uma estreita para o logo e uma larga para o título
+col_logo, col_titulo = st.columns([1, 5])
 
-# Adicionando o descritivo dos índices em um menu retrátil (Glossário)
+with col_logo:
+    # O arquivo deve estar na raiz do seu repositório no GitHub
+    try:
+        st.image("passos_magico_logo.png", width=120)
+    except:
+        st.write("🚀") # Fallback caso a imagem não seja encontrada
+
+with col_titulo:
+    # Markdown para alinhar o título verticalmente com o logo
+    st.markdown("""
+        <style>
+            .titulo-header {
+                margin-top: 10px;
+                color: #1E3A8A; /* Cor azul escuro opcional */
+            }
+        </style>
+        <h1 class='titulo-header'>Mentor Digital: Analisador de Risco de Defasagem</h1>
+    """, unsafe_allow_html=True)
+
+st.markdown("Esta ferramenta auxilia na identificação precoce de alunos em risco utilizando indicadores da **Associação Passos Mágicos**.")
 with st.expander("📖 Glossário: Entenda os Indicadores (INDE)"):
     st.markdown("""
     Os indicadores abaixo compõem o **Índice de Desenvolvimento Educacional (INDE)**:
