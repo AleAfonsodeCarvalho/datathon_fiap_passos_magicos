@@ -6,6 +6,46 @@ import plotly.graph_objects as go
 # 1. Configuração da Interface (Sempre a primeira função de UI)
 st.set_page_config(page_title="Passos Mágicos - Mentor Digital", layout="wide", page_icon="🪄")
 
+# --- ESTILIZAÇÃO PERSONALIZADA (CSS) ---
+st.markdown(f"""
+    <style>
+        /* Cor de fundo principal e cor do texto */
+        .stApp {{
+            background-color: #FFFFFF;
+            color: #1E3A8A;
+        }}
+        
+        /* Estilização dos Títulos */
+        h1, h2, h3 {{
+            color: #1E3A8A !important;
+            font-weight: 700;
+        }}
+
+        /* Botão principal (Cor Amarela da Passos Mágicos) */
+        div.stButton > button:first-child {{
+            background-color: #FFC107;
+            color: #1E3A8A;
+            border-radius: 10px;
+            border: none;
+            font-weight: bold;
+            height: 3em;
+            transition: 0.3s;
+        }}
+        
+        div.stButton > button:first-child:hover {{
+            background-color: #1E3A8A;
+            color: #FFFFFF;
+        }}
+
+        /* Estilização dos Expanders e Containers */
+        .streamlit-expanderHeader {{
+            background-color: #F0F2F6;
+            color: #1E3A8A !important;
+            border-radius: 5px;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
+
 # 2. Carregamento dos artefatos processados
 @st.cache_resource
 def load_models():
