@@ -42,9 +42,9 @@ if st.sidebar.button("Executar Análise de Risco"):
 
     with col1:
         st.metric("Probabilidade de Risco", f"{probabilidade*100:.1f}%")
-        if probabilidade > 0.7:
+        if probabilidade > 0.6:
             st.error("⚠️ ALTO RISCO: Intervenção imediata recomendada.")
-        elif probabilidade > 0.4:
+        elif probabilidade > 0.3:
             st.warning("PONTOS DE ATENÇÃO: Monitorar evolução no próximo ciclo.")
         else:
             st.success("SITUAÇÃO ESTÁVEL: Aluno em bom desenvolvimento.")
