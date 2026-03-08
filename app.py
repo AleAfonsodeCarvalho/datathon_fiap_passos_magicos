@@ -26,7 +26,7 @@ def load_models():
     try:
         model = joblib.load('modelo_risco_passos.pkl')
         features = joblib.load('features_list.pkl')
-        medias = joblib.load('medias_comparativas.pkl')
+        medias = joblib.load('medianas_comparativas.pkl')
     except Exception as e:
         st.error(f"Erro ao carregar artefatos: {e}")
         st.stop()
