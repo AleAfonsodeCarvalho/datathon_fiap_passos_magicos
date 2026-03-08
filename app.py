@@ -18,7 +18,6 @@ import pandas as pd
 import joblib
 import plotly.graph_objects as go
 
-# Data atual: 03/08/2026
 st.set_page_config(page_title="Passos Mágicos - Mentor Digital", layout="wide", page_icon="🪄")
 
 # CSS personalizado
@@ -105,27 +104,17 @@ for i, feature in enumerate(features):
 st.markdown("---")
 
 # Processamento e resultados
-# 6. Processamento e Resultados
-# 6. Processamento e Resultados
-# Processamento e resultados
-# 6. Processamento e Resultados
+
 if st.button("Executar Análise de Risco", use_container_width=True):
     df_input = pd.DataFrame([input_data])
     
-    # 1. Cálculo da Probabilidade Bruta da IA
+
     probs = model.predict_proba(df_input)[0]
     
-    # 2. Cálculo da Média Real do Aluno (A "Verdade" dos Dados)
-    # Atribuímos pesos se necessário, mas a média simples já resolve a inversão
-    media_aluno = df_input.mean(axis=1).values[0]
-    
-    # 3. AJUSTE DE CONFIANÇA (Lógica Híbrida)
-    # Se o aluno é excelente (media > 7), o risco DEVE ser baixo.
-    # Se o aluno é crítico (media < 4), o risco DEVE ser alto.
-    # Entre 4 e 7, deixamos a IA atuar com um ajuste de escala.
-    
+    media_aluno = df_input.mean(axis=1).values[0]    
+   
     if media_aluno >= 8.0:
-        # Forçamos o risco para a faixa estável (ajustando a sensibilidade da IA)
+
         prob_risco = min(probs) * (1 - (media_aluno/10))
     elif media_aluno <= 4.0:
         # Forçamos o risco para a faixa alta
@@ -136,9 +125,9 @@ if st.button("Executar Análise de Risco", use_container_width=True):
         # Se media é razoável, risco deve ser a menor das probabilidades
         prob_risco = min(probs) if media_aluno > 5.5 else max(probs)
 
-    # Garantir que o valor final esteja entre 0 e 1
+
     prob_risco = max(0.05, min(0.99, prob_risco))
-    # Status e cor
+
     if prob_risco > 0.6:
         cor_status, status_texto = '#e74c3c', "ALTO RISCO"
     elif prob_risco > 0.3:
@@ -164,7 +153,7 @@ if st.button("Executar Análise de Risco", use_container_width=True):
         st.plotly_chart(fig_donut, use_container_width=True)
         st.markdown(f"<h3 style='text-align: center; color: {cor_status};'>{status_texto}</h3>", unsafe_allow_html=True)
 
-        # Plano de ação automático
+  
         ponto_critico = min(input_data, key=input_data.get)
         nota_critica = input_data.get(ponto_critico, None)
 
@@ -202,7 +191,6 @@ if st.button("Executar Análise de Risco", use_container_width=True):
         valores_aluno = [input_data.get(f, 5.0) for f in features]
         valores_media = [medias.get(f, 5.0) for f in features]
 
-        # Fechar o círculo do radar
         categorias.append(categorias[0])
         valores_aluno.append(valores_aluno[0])
         valores_media.append(valores_media[0])
