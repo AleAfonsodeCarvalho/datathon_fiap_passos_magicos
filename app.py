@@ -64,7 +64,7 @@ with col_titulo:
 
 st.markdown("Esta ferramenta auxilia na identificação precoce de alunos em risco utilizando indicadores da **Associação Passos Mágicos**.")
 
-with st.expander("📖 Glossário: Entenda os Indicadores (INDE)"):
+with st.expander("Glossário: Entenda os Indicadores (INDE)"):
 
     st.markdown("""
     Os indicadores abaixo compõem o **Índice de Desenvolvimento Educacional (INDE)**:
@@ -116,10 +116,10 @@ if st.button("Executar Análise de Risco"):
         
         st.divider()
         with st.container(border=True):
-            st.markdown(f"**🎯 Sugestão de Ação:**")
+            st.markdown(f"**Sugestão de Ação:**")
             # Lógica de Alerta de Vulnerabilidade Silenciosa
             if prob_risco <= 0.3 and (input_data['IPS'] < 5 or input_data['IPP'] < 5):
-                st.warning("⚠️ **Vulnerabilidade Silenciosa Detectada**")
+                st.warning("**Vulnerabilidade Silenciosa Detectada**")
                 st.write("""
                 Embora o risco acadêmico geral seja baixo, os indicadores socioemocionais (IPS/IPP) 
                 estão em nível crítico. O aluno pode estar mantendo as notas, mas sob alto estresse 
@@ -140,7 +140,7 @@ if st.button("Executar Análise de Risco"):
                 st.write("**Manutenção:** Continuar incentivando o bom desempenho atual.")
 
     with col_chart:
-        st.subheader("📊 Perfil Comparativo (Radar)")
+        st.subheader("Perfil Comparativo (Radar)")
         
         categorias = [f.replace('_', ' ') for f in features]
         valores_aluno = list(input_data.values())
@@ -172,6 +172,7 @@ if st.button("Executar Análise de Risco"):
 # --- TEXTO EXPLICATIVO DO GRÁFICO ---
         st.info("""
         **Como interpretar o gráfico:**
+        **Como base no histórico dos alunos de 2022 até 2024**
         * **Área Cinza:** Representa a média histórica dos alunos da Passos Mágicos.
         * **Área Colorida:** Representa o desempenho atual deste aluno. 
         * **Análise Visual:** Quanto mais "puxada" a teia estiver para as bordas, melhor o desempenho naquela dimensão. Pontas muito próximas ao centro indicam áreas que necessitam de atenção pedagógica.
