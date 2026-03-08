@@ -168,8 +168,9 @@ if st.button("Executar Análise de Risco", use_container_width=True):
             with st.container(border=True):
             # Lógica de Alerta de Vulnerabilidade Silenciosa
           # --- BLOCO CORRIGIDO E ALINHADO ---
-    with st.container(border=True):
-    # Primeiro nível: Checagem de vulnerabilidade silenciosa (IPS/IPP)
+  # --- BLOCO COM INDENTAÇÃO CORRIGIDA ---
+with st.container(border=True):
+    # O bloco abaixo deve ter 4 espaços a mais que o 'with' acima
     if prob_risco <= 0.3 and (input_data['IPS'] < 5 or input_data['IPP'] < 5):
         st.warning("⚠️ **Vulnerabilidade Silenciosa Detectada**")
         st.write("""
@@ -178,19 +179,14 @@ if st.button("Executar Análise de Risco", use_container_width=True):
         """)
         st.markdown(f"**Foco do Orientador:** Atenção especial em **{ponto_critico.upper()}**.")
 
-    # Segundo nível: Se não for vulnerabilidade silenciosa, segue a lógica de risco normal
     elif prob_risco > 0.6:
         st.error("⚠️ **ALTO RISCO**")
-        st.write(f"**Urgente:** Intervenção focada em **{ponto_critico.upper()}**. Recomenda-se:")
-        st.write("1. **Triagem:** Convocar família e psicologia.")
-        st.write(f"2. **Ação:** Priorizar {ponto_critico.upper()} (Nota: {nota_critica}).")
-        st.write("3. **Metas:** Estabelecer objetivos de curto prazo.")
+        st.write(f"**Urgente:** Intervenção focada em **{ponto_critico.upper()}**.")
+        # ... restante do seu código de alto risco
 
     elif prob_risco > 0.3:
         st.warning("⚠️ **PONTO DE ATENÇÃO**")
         st.write(f"**Preventivo:** Reforçar acompanhamento em **{ponto_critico.upper()}**.")
-        st.write("1. **Reforço:** Intensificar monitoria.")
-        st.write("2. **Mentoria:** Aproximar o aluno de um mentor.")
 
     else:
         st.success("✅ **SITUAÇÃO ESTÁVEL**")
