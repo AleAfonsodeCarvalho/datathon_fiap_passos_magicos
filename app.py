@@ -6,7 +6,6 @@ import plotly.graph_objects as go
 logo_passos = "passos_magico_logo.png"
 
 # Configuração da Interface (o ícone da aba do navegador ainda precisa de um emoji ou imagem carregada)
-st.set_page_config(page_title="Passos Mágicos - Mentor Digital", layout="wide", page_icon="🪄")
 
 # Criando um cabeçalho com o Logo e o Título lado a lado
 col_logo, col_titulo = st.columns([1, 4])
