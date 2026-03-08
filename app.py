@@ -3,6 +3,20 @@ import pandas as pd
 import joblib
 import plotly.graph_objects as go
 
+logo_passos = "passos_magico_logo.png"
+
+# Configuração da Interface (o ícone da aba do navegador ainda precisa de um emoji ou imagem carregada)
+st.set_page_config(page_title="Passos Mágicos - Mentor Digital", layout="wide", page_icon="🪄")
+
+# Criando um cabeçalho com o Logo e o Título lado a lado
+col_logo, col_titulo = st.columns([1, 4])
+
+with col_logo:
+    st.image(logo_passos, width=150) # Ajuste a largura conforme necessário
+
+with col_titulo:
+    st.title("Mentor Digital: Analisador de Risco de Defasagem")
+
 # 1. Carregamento dos artefatos processados
 @st.cache_resource
 def load_models():
