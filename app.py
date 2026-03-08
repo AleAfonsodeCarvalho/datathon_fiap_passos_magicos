@@ -22,7 +22,7 @@ except:
 
 def explicar_resultado(dados, prob_risco_decimal):
     """Gera o texto explicativo focando em Estabilidade para alinhar com o gráfico."""
-    estabilidade = (1 - prob_risco_decimal) * 100
+    estabilidade = (prob_risco_decimal) * 100
     indicadores_baixos = [k for k, v in dados.items() if v < 7.0]
     nomes_bonitos = {
         'IDA': 'Desempenho Acadêmico', 'IEG': 'Engajamento',
