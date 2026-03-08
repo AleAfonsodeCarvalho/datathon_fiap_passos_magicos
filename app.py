@@ -167,14 +167,16 @@ if st.button("Executar Análise de Risco", use_container_width=True):
             st.markdown(f"**Sugestão de Ação:**")
             with st.container(border=True):
             # Lógica de Alerta de Vulnerabilidade Silenciosa
+           with st.container(border=True):
+            # O código abaixo DEVE ter 4 espaços a mais que o 'with' acima
             if prob_risco <= 0.3 and (input_data['IPS'] < 5 or input_data['IPP'] < 5):
-                st.warning("**Vulnerabilidade Silenciosa Detectada**")
+                st.warning("⚠️ **Vulnerabilidade Silenciosa Detectada**")
                 st.write("""
                 Embora o risco acadêmico geral seja baixo, os indicadores socioemocionais (IPS/IPP) 
-                estão em nível crítico. O aluno pode estar mantendo as notas, mas sob alto estresse 
-                ou com barreiras de aprendizado não tratadas.
+                estão em nível crítico. Recomenda-se apoio psicopedagógico preventivo.
                 """)
-                st.markdown(f"**Foco do Orientador:** Apoio psicopedagógico preventivo em **{ponto_critico.upper()}**.")
+                st.markdown(f"**Foco do Orientador:** Atenção especial em **{ponto_critico.upper()}**.")            
+            else:
             if prob_risco > 0.6:
                 st.write(f"**Urgente:** Intervenção focada em **{ponto_critico.upper()}**. O aluno apresenta uma probabilidade alta de defasagem. Recomenda-se:")
                 st.write(f"1. **Reunião de Triagem:** Convocar a família e a equipe de psicologia para entender o cenário atual.")
