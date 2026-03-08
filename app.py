@@ -66,16 +66,39 @@ if st.button("Executar Análise de Risco", use_container_width=True):
     # 4. Exibição dos Resultados (Métricas + Gráfico Radar)
     col_metrics, col_chart = st.columns([1, 2])
 
+   # ... (dentro do bloco 'if st.button("Executar Análise de Risco"):')
+
     with col_metrics:
         st.subheader("Resultado")
         st.metric("Probabilidade de Risco", f"{prob_risco*100:.1f}%")
         
+        # Identificar qual o ponto mais crítico (menor nota) para personalizar a ação
+        ponto_critico = min(input_data, key=input_data.get)
+        nota_critica = input_data[ponto_critico]
+
         if prob_risco > 0.6:
             st.error("⚠️ ALTO RISCO: Intervenção imediata recomendada.")
+            texto_acao = f"""
+            **Plano de Recuperação Urgente:**
+            O aluno apresenta uma probabilidade alta de defasagem. Recomenda-se:
+            1. **Reunião de Triagem:** Convocar a família e a equipe de psicologia para entender o cenário atual.
+            2. **Foco no {ponto_critico.upper()}:** Como este é o menor índice ({nota_critica}), a intervenção deve priorizar esta área.
+            3. **Plano de Metas:** Estabelecer objetivos semanais de curto prazo para reverter o quadro.
+            """
         elif prob_risco > 0.3:
             st.warning("PONTOS DE ATENÇÃO: Monitorar evolução no próximo ciclo.")
+            texto_acao = f"""
+            **Ação Preventiva:**
+            O aluno está em uma zona de alerta. Sugestões:
+            1. **Reforço Direcionado:** Intensificar o acompanhamento em {ponto_critico.upper()}.
+            2. **Mentoria:** Aproximar o aluno de um mentor para aumentar o engajamento.
+            """
         else:
             st.success("SITUAÇÃO ESTÁVEL: Aluno em bom desenvolvimento.")
+            texto_acao = "O aluno mantém um bom desempenho. Recomenda-se manter as atividades atuais e incentivar o protagonismo."
+
+        # Exibe o texto explicativo
+        st.markdown(texto_acao)
             
         st.info(f"O modelo analisou as variáveis: {', '.join(features)}.")
 
