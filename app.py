@@ -169,29 +169,25 @@ if st.button("Executar Análise de Risco", use_container_width=True):
             # Lógica de Alerta de Vulnerabilidade Silenciosa
           # --- BLOCO CORRIGIDO E ALINHADO ---
   # --- BLOCO COM INDENTAÇÃO CORRIGIDA ---
-with st.container(border=True):
+    with st.container(border=True):
     # O bloco abaixo deve ter 4 espaços a mais que o 'with' acima
-    if prob_risco <= 0.3 and (input_data['IPS'] < 5 or input_data['IPP'] < 5):
-        st.warning("⚠️ **Vulnerabilidade Silenciosa Detectada**")
-        st.write("""
-        Embora o risco acadêmico geral seja baixo, os indicadores socioemocionais (IPS/IPP) 
-        estão em nível crítico. Recomenda-se apoio psicopedagógico preventivo.
-        """)
-        st.markdown(f"**Foco do Orientador:** Atenção especial em **{ponto_critico.upper()}**.")
-
-    elif prob_risco > 0.6:
-        st.error("⚠️ **ALTO RISCO**")
-        st.write(f"**Urgente:** Intervenção focada em **{ponto_critico.upper()}**.")
-        # ... restante do seu código de alto risco
-
-    elif prob_risco > 0.3:
-        st.warning("⚠️ **PONTO DE ATENÇÃO**")
-        st.write(f"**Preventivo:** Reforçar acompanhamento em **{ponto_critico.upper()}**.")
-
-    else:
-        st.success("✅ **SITUAÇÃO ESTÁVEL**")
-        st.write("**Manutenção:** Continuar incentivando o bom desempenho atual.")
-
+        if prob_risco <= 0.3 and (input_data['IPS'] < 5 or input_data['IPP'] < 5):
+            st.warning("⚠️ **Vulnerabilidade Silenciosa Detectada**")
+            st.write("""
+            Embora o risco acadêmico geral seja baixo, os indicadores socioemocionais (IPS/IPP) 
+            estão em nível crítico. Recomenda-se apoio psicopedagógico preventivo.
+            """)
+            st.markdown(f"**Foco do Orientador:** Atenção especial em **{ponto_critico.upper()}**.")    
+        elif prob_risco > 0.6:
+            st.error("⚠️ **ALTO RISCO**")
+            st.write(f"**Urgente:** Intervenção focada em **{ponto_critico.upper()}**.")
+            # ... restante do seu código de alto risco
+        elif prob_risco > 0.3:
+            st.warning("⚠️ **PONTO DE ATENÇÃO**")
+            st.write(f"**Preventivo:** Reforçar acompanhamento em **{ponto_critico.upper()}**.")
+        else:
+            st.success("✅ **SITUAÇÃO ESTÁVEL**")
+            st.write("**Manutenção:** Continuar incentivando o bom desempenho atual.")
     with col_chart:
         st.subheader("Perfil Comparativo (Radar)")
         
