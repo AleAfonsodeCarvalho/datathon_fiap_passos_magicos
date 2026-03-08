@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 # 1. Carregamento dos artefatos processados
 @st.cache_resource
 def load_models():
-    # Carregando os arquivos enviados pelo usuário
+    # Carregando os arquivos enviados: modelo, lista de features e médias históricas
     model = joblib.load('modelo_risco_passos.pkl')
     features = joblib.load('features_list.pkl')
     medias = joblib.load('medias_comparativas.pkl')
@@ -15,28 +15,25 @@ def load_models():
 model, features, medias = load_models()
 
 # Configuração da Interface
-st.set_page_config(page_title="Passos Mágicos - Predição de Risco", layout="wide")
+st.set_page_config(page_title="Passos Mágicos - Mentor Digital", layout="wide")
+
 st.title("🚀 Mentor Digital: Analisador de Risco de Defasagem")
 st.markdown("""
 Esta ferramenta auxilia na identificação precoce de alunos em risco, utilizando os indicadores 
 acadêmicos, psicossociais e de engajamento da **Associação Passos Mágicos**.
 """)
 
-st.divider()
-
-# Adicionando o descritivo dos índices em um menu retrátil
+# Adicionando o descritivo dos índices em um menu retrátil (Glossário)
 with st.expander("📖 Glossário: Entenda os Indicadores (INDE)"):
     st.markdown("""
-    Os indicadores abaixo compõem o **Índice de Desenvolvimento Educacional (INDE)** e são utilizados pelo modelo para prever a trajetória do aluno:
+    Os indicadores abaixo compõem o **Índice de Desenvolvimento Educacional (INDE)**:
     
-    * **IDA (Índice de Desempenho Acadêmico):** Representa a média das notas nas disciplinas principais. É o reflexo direto do aproveitamento escolar.
-    * **IEG (Índice de Engajamento):** Mede o compromisso do aluno com as tarefas, presença nas aulas e participação em atividades extras.
-    * **IPS (Índice Psicossocial):** Avaliação do bem-estar emocional e do contexto social/familiar do aluno, realizada pela equipe de psicologia.
-    * **IPP (Índice de Psicopedagogia):** Foca na evolução cognitiva e na superação de dificuldades de aprendizagem específicas.
-    * **IPV (Índice de Ponto de Virada):** Indica se o aluno atingiu o nível de autonomia e maturidade necessários para progredir com confiança.
+    * **IDA (Índice de Desempenho Acadêmico):** Média das notas nas disciplinas principais (Português e Matemática).
+    * **IEG (Índice de Engajamento):** Mede o compromisso com tarefas, presença e participação.
+    * **IPS (Índice Psicossocial):** Bem-estar emocional e contexto familiar (avaliado pela Psicologia).
+    * **IPP (Índice de Psicopedagogia):** Evolução cognitiva e superação de barreiras de aprendizagem.
+    * **IPV (Índice de Ponto de Virada):** Maturidade e autonomia para o desenvolvimento independente.
     """)
-
-# ... (seguindo para a parte dos inputs em colunas)
 
 st.divider()
 
@@ -44,68 +41,71 @@ st.divider()
 st.subheader("📝 Inserir Indicadores do Aluno")
 input_data = {}
 
-# Organizando os inputs em colunas para não ocupar muito espaço vertical
+# Organizando os inputs em colunas
 cols_input = st.columns(len(features))
-
 for i, feature in enumerate(features):
     with cols_input[i]:
         label = feature.replace('_', ' ').upper()
-        # Voltando ao number_input como solicitado
         input_data[feature] = st.number_input(f"{label}", min_value=0.0, max_value=10.0, value=5.0, step=0.1)
 
 st.markdown("---")
 
-# 3. Processamento da Predição
+# 3. Processamento e Exibição de Resultados
 if st.button("Executar Análise de Risco", use_container_width=True):
-    # Transforma o dicionário em DataFrame (1 linha) para o modelo
     df_input = pd.DataFrame([input_data])
     
     # Cálculo da probabilidade de RISCO (Classe 0)
     prob_risco = model.predict_proba(df_input)[0][0]
     
-    # 4. Exibição dos Resultados (Métricas + Gráfico Radar)
+    # Definição de cores e status
+    if prob_risco > 0.6:
+        cor_status = '#e74c3c' # Vermelho
+        status_texto = "ALTO RISCO"
+    elif prob_risco > 0.3:
+        cor_status = '#f1c40f' # Amarelo
+        status_texto = "PONTO DE ATENÇÃO"
+    else:
+        cor_status = '#2ecc71' # Verde
+        status_texto = "SITUAÇÃO ESTÁVEL"
+
+    # Layout de Colunas para os Gráficos
     col_metrics, col_chart = st.columns([1, 2])
 
-   # ... (dentro do bloco 'if st.button("Executar Análise de Risco"):')
-
     with col_metrics:
-        st.subheader("Resultado")
-        st.metric("Probabilidade de Risco", f"{prob_risco*100:.1f}%")
+        st.subheader("Análise de Risco")
         
-        # Identificar qual o ponto mais crítico (menor nota) para personalizar a ação
+        # Gráfico de Rosca (Donut Chart)
+        fig_donut = go.Figure(data=[go.Pie(
+            values=[prob_risco, 1 - prob_risco],
+            hole=.7,
+            marker_colors=[cor_status, "#f0f2f6"],
+            textinfo='none',
+            hoverinfo='none'
+        )])
+        fig_donut.update_layout(
+            annotations=[dict(text=f'{prob_risco*100:.0f}%', x=0.5, y=0.5, font_size=40, showarrow=False, font_color=cor_status)],
+            showlegend=False, height=250, margin=dict(l=10, r=10, t=10, b=10)
+        )
+        st.plotly_chart(fig_donut, use_container_width=True)
+        st.markdown(f"<h3 style='text-align: center; color: {cor_status};'>{status_texto}</h3>", unsafe_allow_color=True)
+
+        # 4. Plano de Ação Automático
         ponto_critico = min(input_data, key=input_data.get)
         nota_critica = input_data[ponto_critico]
-
-        if prob_risco > 0.6:
-            st.error("⚠️ ALTO RISCO: Intervenção imediata recomendada.")
-            texto_acao = f"""
-            **Plano de Recuperação Urgente:**
-            O aluno apresenta uma probabilidade alta de defasagem. Recomenda-se:
-            1. **Reunião de Triagem:** Convocar a família e a equipe de psicologia para entender o cenário atual.
-            2. **Foco no {ponto_critico.upper()}:** Como este é o menor índice ({nota_critica}), a intervenção deve priorizar esta área.
-            3. **Plano de Metas:** Estabelecer objetivos semanais de curto prazo para reverter o quadro.
-            """
-        elif prob_risco > 0.3:
-            st.warning("PONTOS DE ATENÇÃO: Monitorar evolução no próximo ciclo.")
-            texto_acao = f"""
-            **Ação Preventiva:**
-            O aluno está em uma zona de alerta. Sugestões:
-            1. **Reforço Direcionado:** Intensificar o acompanhamento em {ponto_critico.upper()}.
-            2. **Mentoria:** Aproximar o aluno de um mentor para aumentar o engajamento.
-            """
-        else:
-            st.success("SITUAÇÃO ESTÁVEL: Aluno em bom desenvolvimento.")
-            texto_acao = "O aluno mantém um bom desempenho. Recomenda-se manter as atividades atuais e incentivar o protagonismo."
-
-        # Exibe o texto explicativo
-        st.markdown(texto_acao)
-            
-        st.info(f"O modelo analisou as variáveis: {', '.join(features)}.")
+        
+        st.divider()
+        with st.container(border=True):
+            st.markdown(f"**🎯 Sugestão de Ação:**")
+            if prob_risco > 0.6:
+                st.write(f"**Urgente:** Intervenção focada em **{ponto_critico.upper()}**. Convocar equipe multidisciplinar para suporte imediato.")
+            elif prob_risco > 0.3:
+                st.write(f"**Preventivo:** Reforçar acompanhamento em **{ponto_critico.upper()}** e monitorar engajamento.")
+            else:
+                st.write("**Manutenção:** Continuar incentivando o bom desempenho atual.")
 
     with col_chart:
-        st.subheader("📊 Perfil Multidimensional (Radar)")
+        st.subheader("📊 Perfil Comparativo (Radar)")
         
-        # Preparação dos dados para o Gráfico Spider
         categorias = [f.replace('_', ' ') for f in features]
         valores_aluno = list(input_data.values())
         valores_media = [medias.get(f, 5.0) for f in features]
@@ -115,40 +115,24 @@ if st.button("Executar Análise de Risco", use_container_width=True):
         valores_aluno.append(valores_aluno[0])
         valores_media.append(valores_media[0])
 
-        fig = go.Figure()
-
-        # Camada da Média Geral (Referência)
-        fig.add_trace(go.Scatterpolar(
-            r=valores_media,
-            theta=categorias,
-            fill='toself',
-            name='Média Geral',
+        fig_radar = go.Figure()
+        # Média Geral
+        fig_radar.add_trace(go.Scatterpolar(
+            r=valores_media, theta=categorias, fill='toself', name='Média Geral',
             line_color='rgba(189, 195, 199, 0.8)'
         ))
-
-        # Camada do Aluno Analisado
-        # A cor muda conforme o risco
-        cor_radar = '#2ecc71' if prob_risco < 0.4 else ('#f1c40f' if prob_risco < 0.6 else '#e74c3c')
-        
-        fig.add_trace(go.Scatterpolar(
-            r=valores_aluno,
-            theta=categorias,
-            fill='toself',
-            name='Aluno',
-            line_color=cor_radar
+        # Aluno
+        fig_radar.add_trace(go.Scatterpolar(
+            r=valores_aluno, theta=categorias, fill='toself', name='Aluno',
+            line_color=cor_status
         ))
 
-        fig.update_layout(
-            polar=dict(
-                radialaxis=dict(visible=True, range=[0, 10])
-            ),
-            showlegend=True,
-            height=450,
-            margin=dict(l=50, r=50, t=20, b=20)
+        fig_radar.update_layout(
+            polar=dict(radialaxis=dict(visible=True, range=[0, 10])),
+            showlegend=True, height=450, margin=dict(l=50, r=50, t=30, b=30)
         )
+        st.plotly_chart(fig_radar, use_container_width=True)
 
-        st.plotly_chart(fig, use_container_width=True)
-
-# 5. Rodapé informativo
+# Rodapé
 st.divider()
-st.caption("Protótipo desenvolvido para o Datathon Fase 5 - Pós Tech. [cite: 3, 4, 6]")
+st.caption("Solução desenvolvida para a Associação Passos Mágicos | Datathon Fase 5")
