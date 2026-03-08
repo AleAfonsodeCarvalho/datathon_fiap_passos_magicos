@@ -172,14 +172,18 @@ with col_f1:
     st.markdown("###Transformando o Brasil através da Educação")
     st.write("A Passos Mágicos transforma vidas através da educação e protagonismo. Este projeto visa apoiar essa missão com dados.")
 
- st.info("""
+# --- RODAPÉ FINAL (Fora do bloco 'if st.button', alinhado à esquerda) ---
+st.divider()
+
+with st.container():
+    st.info("""
     **Você sabia?** O programa da Passos Mágicos inclui educação de qualidade, suporte psicopedagógico e 
     atividades de protagonismo. Este modelo preditivo é uma ferramenta de apoio para que 
     essa 'fórmula mágica' chegue a quem mais precisa no momento certo.
     
     [Visite o site da Associação](https://passosmagicos.org.br/)
-    """)    
-    st.link_button("Conheça o site oficial", "https://passosmagicos.org.br/")
+    """)
+st.divider()
 
 with col_f2:
     st.video("https://youtu.be/hT_jOmLzpH4")
