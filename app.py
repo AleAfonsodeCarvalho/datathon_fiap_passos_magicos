@@ -206,7 +206,7 @@ if st.button("Executar Análise de Risco", use_container_width=True):
         """)
 
 # Rodapé
-s# --- RODAPÉ FINAL COM VÍDEO INSTITUCIONAL ---
+# --- RODAPÉ FINAL COM VÍDEO INSTITUCIONAL ---
 st.divider()
 
 col_footer1, col_footer2 = st.columns([2, 1])
@@ -218,14 +218,15 @@ with col_footer1:
     mas sim **perspectiva**. Este projeto de Analytics Engineering visa garantir que nenhum aluno 
     perca essa perspectiva por falta de uma intervenção no momento certo.
     """)
+
+    st.divider()
+    
     st.link_button("Acesse o Site Oficial", "https://passosmagicos.org.br/")
 
 with col_footer2:
     # Exibição do vídeo diretamente na aplicação
     st.video("https://youtu.be/hT_jOmLzpH4")
     st.caption("Assista: Qual a importância de um sonho? - Manifesto Passos Mágicos")
-
-
 
 # Rodapé
 st.divider()
