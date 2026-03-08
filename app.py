@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import plotly.express as px
+import plotly.graph_objects as go
 
-# 1. Carregamento dos artefatos processados
+# 1. Carregamento dos artefatos
 @st.cache_resource
 def load_models():
     model = joblib.load('modelo_risco_passos.pkl')
@@ -13,57 +13,78 @@ def load_models():
 
 model, features, medias = load_models()
 
-# Configuração da Interface
-st.set_page_config(page_title="Passos Mágicos - Predição de Risco", layout="wide")
-st.title("🚀 Mentor Digital: Analisador de Risco de Defasagem")
-st.markdown("Utilize os indicadores abaixo para identificar alunos que precisam de atenção prioritária.")
+st.set_page_config(page_title="Passos Mágicos - Radar de Risco", layout="wide")
+st.title("🚀 Mentor Digital: Analisador de Risco")
 
-# 2. Sidebar para entrada de dados
+# 2. Sidebar
 st.sidebar.header("Entrada de Indicadores")
 input_data = {}
-
-# Criar inputs dinamicamente com base nas features do seu modelo
 for feature in features:
-    # Ajusta o label para algo mais amigável se necessário
     label = feature.replace('_', ' ').upper()
-    input_data[feature] = st.sidebar.number_input(f"{label}", min_value=0.0, max_value=10.0, value=5.0)
+    input_data[feature] = st.sidebar.slider(f"{label}", 0.0, 10.0, 5.0)
 
-# 3. Processamento da Predição
-if st.sidebar.button("Executar Análise de Risco"):
-    # Transforma o dicionário em DataFrame (1 linha)
+# 3. Processamento
+if st.sidebar.button("Executar Análise"):
     df_input = pd.DataFrame([input_data])
     
-    # Predição
-    probabilidade = model.predict_proba(df_input)[0][1]
-    classe = model.predict(df_input)[0]
-
-    # 4. Exibição dos Resultados
+    # Probabilidade da Classe 0 (Risco)
+    prob_risco = model.predict_proba(df_input)[0][0]
+    
     col1, col2 = st.columns([1, 2])
 
     with col1:
-        st.metric("Probabilidade de Risco", f"{probabilidade*100:.1f}%")
-        if probabilidade > 0.6:
-            st.error("⚠️ ALTO RISCO: Intervenção imediata recomendada.")
-        elif probabilidade > 0.3:
-            st.warning("PONTOS DE ATENÇÃO: Monitorar evolução no próximo ciclo.")
+        st.subheader("Resultado da Análise")
+        st.metric("Nível de Risco", f"{prob_risco*100:.1f}%")
+        
+        if prob_risco > 0.6:
+            st.error("⚠️ ALTO RISCO: Intervenção prioritária.")
+        elif prob_risco > 0.3:
+            st.warning("PONTOS DE ATENÇÃO: Monitoramento necessário.")
         else:
-            st.success("SITUAÇÃO ESTÁVEL: Aluno em bom desenvolvimento.")
+            st.success("SITUAÇÃO ESTÁVEL: Bom desenvolvimento.")
 
     with col2:
-        # Comparação visual com as médias (usando o arquivo medias_comparativas.pkl)
-        st.subheader("Comparativo com a Média Geral")
+        st.subheader("📊 Perfil Multidimensional (Radar)")
         
-        # Criando um gráfico simples para mostrar onde o aluno está em relação à média
-        df_comp = pd.DataFrame({
-            'Indicador': list(input_data.keys()),
-            'Aluno': list(input_data.values()),
-            'Média Geral': [medias.get(f, 5.0) for f in features] # Fallback para 5.0 se não achar
-        }).melt(id_vars='Indicador', var_name='Tipo', value_name='Nota')
+        # Preparação dos dados para o Radar
+        categorias = [f.replace('_', ' ') for f in features]
+        valores_aluno = list(input_data.values())
+        valores_media = [medias.get(f, 5.0) for f in features]
 
-        fig = px.bar(df_comp, x='Indicador', y='Nota', color='Tipo', barmode='group',
-                     color_discrete_map={'Aluno': '#2ecc71', 'Média Geral': '#bdc3c7'})
+        # O gráfico radar precisa "fechar" o círculo repetindo o primeiro valor
+        categorias.append(categorias[0])
+        valores_aluno.append(valores_aluno[0])
+        valores_media.append(valores_media[0])
+
+        fig = go.Figure()
+
+        # Camada da Média Geral
+        fig.add_trace(go.Scatterpolar(
+            r=valores_media,
+            theta=categorias,
+            fill='toself',
+            name='Média Geral',
+            line_color='rgba(189, 195, 199, 0.8)'
+        ))
+
+        # Camada do Aluno
+        fig.add_trace(go.Scatterpolar(
+            r=valores_aluno,
+            theta=categorias,
+            fill='toself',
+            name='Aluno Analisado',
+            line_color='#2ecc71' if prob_risco < 0.4 else '#e74c3c'
+        ))
+
+        fig.update_layout(
+            polar=dict(
+                radialaxis=dict(visible=True, range=[0, 10])
+            ),
+            showlegend=True,
+            height=450
+        )
+
         st.plotly_chart(fig, use_container_width=True)
 
-# 5. Rodapé informativo
 st.divider()
-st.info("Este modelo utiliza os indicadores IDA, IEG, IPS, IPP e IAN para calcular a vulnerabilidade acadêmica conforme os critérios do Datathon Fase 5.")
+st.info("Interface desenvolvida para suporte à decisão pedagógica da Associação Passos Mágicos.")
