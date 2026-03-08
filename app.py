@@ -30,31 +30,28 @@ for feature in features:
 
 # 3. Processamento da Predição
 if st.sidebar.button("Executar Análise de Risco"):
+    # Transforma o dicionário em DataFrame (1 linha)
     df_input = pd.DataFrame([input_data])
     
-    # 1. Pegamos a probabilidade da CLASSE 0 (Risco)
-    prob_risco = model.predict_proba(df_input)[0][0]
-    
-    # 2. Pegamos a classe final predita (0 ou 1)
-    classe_predita = model.predict(df_input)[0]
+    # Predição
+    probabilidade = model.predict_proba(df_input)[0][1]
+    classe = model.predict(df_input)[0]
 
+    # 4. Exibição dos Resultados
     col1, col2 = st.columns([1, 2])
 
     with col1:
-        st.metric("Nível de Risco", f"{prob_risco*100:.1f}%")
-        
-        # Lógica corrigida: baseada na probabilidade de RISCO
-        if prob_risco > 0.6: # Ajustado para 0.6 pois seu modelo dá 0.66 para notas baixas
+        st.metric("Probabilidade de Risco", f"{probabilidade*100:.1f}%")
+        if probabilidade > 0.7:
             st.error("⚠️ ALTO RISCO: Intervenção imediata recomendada.")
-        elif prob_risco > 0.3:
-            st.warning("PONTOS DE ATENÇÃO: Monitorar evolução.")
+        elif probabilidade > 0.4:
+            st.warning("PONTOS DE ATENÇÃO: Monitorar evolução no próximo ciclo.")
         else:
             st.success("SITUAÇÃO ESTÁVEL: Aluno em bom desenvolvimento.")
-            
+
     with col2:
-        # Exibe se o modelo classificou como Risco (0) ou Estável (1)
-        status = "Risco de Defasagem" if classe_predita == 0 else "Desenvolvimento Normal"
-        st.subheader(f"Status Final: {status}")
+        # Comparação visual com as médias (usando o arquivo medias_comparativas.pkl)
+        st.subheader("Comparativo com a Média Geral")
         
         # Criando um gráfico simples para mostrar onde o aluno está em relação à média
         df_comp = pd.DataFrame({
