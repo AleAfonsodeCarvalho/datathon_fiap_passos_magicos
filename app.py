@@ -80,30 +80,35 @@ st.markdown("---")
 # Processamento e resultados
 # 6. Processamento e Resultados
 # 6. Processamento e Resultados
+# Processamento e resultados
 if st.button("Executar Análise de Risco", use_container_width=True):
-    df_input = pd.DataFrame([input_data])
-    
-    # Pegamos as probabilidades das duas classes [Classe 0, Classe 1]
-    probs = model.predict_proba(df_input)[0]
-    
-    # Calculamos a média das notas inseridas
-    media_atual = df_input.mean(axis=1).values[0]
-    
-    # Lógica de Correção de Inversão:
-    # Se a média das notas é alta (> 6.0), o risco real deve ser o menor valor de probabilidade
-    if media_atual > 6.0:
-        prob_risco = min(probs)
-    else:
-        # Se as notas são baixas, o risco real é o maior valor de probabilidade
-        prob_risco = max(probs)
+    # Garantir ordem das colunas igual à 'features'
+    df_input = pd.DataFrame([input_data], columns=features)
 
-    # Definição de cores e status baseada na probabilidade corrigida
+    # Prever probabilidades (verifica se modelo tem predict_proba)
+    try:
+        probs = model.predict_proba(df_input)[0]
+    except Exception as e:
+        st.error(f"Erro na previsão: {e}")
+        st.stop()
+
+    # Média atual
+    media_atual = df_input.mean(axis=1).values[0]
+
+    # Determinar probabilidade de risco com heurística fornecida
+    if media_atual > 6:
+        prob_risco = float(min(probs))
+    else:
+        prob_risco = float(max(probs))
+
+    # Status e cor
     if prob_risco > 0.6:
         cor_status, status_texto = '#e74c3c', "ALTO RISCO"
     elif prob_risco > 0.3:
         cor_status, status_texto = '#f1c40f', "PONTO DE ATENÇÃO"
     else:
         cor_status, status_texto = '#2ecc71', "SITUAÇÃO ESTÁVEL"
+
 
     col_metrics, col_chart = st.columns([1, 2])
 
