@@ -157,6 +157,14 @@ if st.button("Executar Análise de Risco", use_container_width=True):
         )
         st.plotly_chart(fig_radar, use_container_width=True)
 
+# --- TEXTO EXPLICATIVO DO GRÁFICO ---
+        st.info("""
+        **Como interpretar o gráfico:**
+        * **Área Cinza:** Representa a média histórica dos alunos da Passos Mágicos.
+        * **Área Colorida:** Representa o desempenho atual deste aluno. 
+        * **Análise Visual:** Quanto mais "puxada" a teia estiver para as bordas, melhor o desempenho naquela dimensão. Pontas muito próximas ao centro indicam áreas que necessitam de atenção pedagógica.
+        """)
+
 # Rodapé
 st.divider()
 st.caption("Solução desenvolvida para a Associação Passos Mágicos | Datathon Fase 5")
