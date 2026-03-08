@@ -26,7 +26,7 @@ def explicar_risco_tecnico(dados, prob_risco):
         'IPS': 'Socioemocional', 'IPP': 'Psicopedagógico', 'IPV': 'Ponto de Virada'
     }
     
-    if prob_risco >= 0.40:
+    if prob_risco*-1 >= 0.40:
         msg = f"O modelo identificou um **risco de {prob_risco*100:.1f}%** com base nos padrões de defasagem. "
         if indicadores_baixos:
             detalhes = ", ".join([nomes_bonitos[idx] for idx in indicadores_baixos])
