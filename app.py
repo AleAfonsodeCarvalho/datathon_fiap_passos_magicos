@@ -109,22 +109,33 @@ for i, feature in enumerate(features):
 st.markdown("---")
 
 # 3. Processamento e Exibição de Resultados
+# 6. Processamento e Resultados
 if st.button("Executar Análise de Risco", use_container_width=True):
     df_input = pd.DataFrame([input_data])
     
-    # Cálculo da probabilidade de RISCO (Classe 0)
-    prob_risco = model.predict_proba(df_input)[0][0]
+    # Pegamos as probabilidades das duas classes [Classe 0, Classe 1]
+    probs = model.predict_proba(df_input)[0]
     
-    # Definição de cores e status
-    if prob_risco > 0.6:
-        cor_status = '#e74c3c' # Vermelho
-        status_texto = "ALTO RISCO"
-    elif prob_risco > 0.3:
-        cor_status = '#f1c40f' # Amarelo
-        status_texto = "PONTO DE ATENÇÃO"
+    # IMPORTANTE: Vamos identificar qual classe representa o risco.
+    # Se a média das notas for ALTA (>6) e a probabilidade da Classe 0 for ALTA,
+    # significa que a Classe 0 é 'Estável' e a Classe 1 é 'Risco'.
+    media_atual = df_input.mean(axis=1).values[0]
+    
+    # Lógica de correção automática de inversão
+    if media_atual > 6:
+        # Se as notas são boas, o risco deve ser a menor probabilidade
+        prob_risco = min(probs) 
     else:
-        cor_status = '#2ecc71' # Verde
-        status_texto = "SITUAÇÃO ESTÁVEL"
+        # Se as notas são baixas, o risco deve ser a maior probabilidade
+        prob_risco = max(probs)
+
+    # Definição de cores e status baseada na probabilidade corrigida
+    if prob_risco > 0.6:
+        cor_status, status_texto = '#e74c3c', "ALTO RISCO"
+    elif prob_risco > 0.3:
+        cor_status, status_texto = '#f1c40f', "PONTO DE ATENÇÃO"
+    else:
+        cor_status, status_texto = '#2ecc71', "SITUAÇÃO ESTÁVEL"
 
     # Layout de Colunas para os Gráficos
     col_metrics, col_chart = st.columns([1, 2])
