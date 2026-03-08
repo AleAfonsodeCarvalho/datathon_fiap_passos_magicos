@@ -92,58 +92,60 @@ st.markdown("---")
 
 # 4. Processamento e Resultados
 
+# 3. Processamento e Exibição de Resultados
 if st.button("Executar Análise de Risco", use_container_width=True):
-    df_input = pd.DataFrame([input_data])    
-    # Pegamos a probabilidade de cada classe
-    # [0] costuma ser Risco e [1] Estável no seu modelo
+    df_input = pd.DataFrame([input_data])
+    
+    # 1. DEFINA A VARIÁVEL LOGO NO INÍCIO DO BLOCO DO BOTÃO
+    # Isso garante que ela exista para todos os blocos abaixo
+    ponto_critico = min(input_data, key=input_data.get)
+    nota_critica = input_data[ponto_critico]
+    
+    # Pegamos a probabilidade de risco
     probs = model.predict_proba(df_input)[0]
-    prob_risco = probs[0]      
-    # Verificação de segurança: se as notas são altas (>7) e o risco deu alto (>0.5), 
-    # significa que as classes estão invertidas no arquivo pkl.
+    prob_risco = probs[0] 
+    
+    # Inversão de lógica se necessário (caso notas altas deem risco alto)
     media_notas = df_input.mean(axis=1).values[0]
     if media_notas > 7 and prob_risco > 0.5:
-        prob_risco = probs[1] # Inverte para refletir a realidade dos dados    
-    # Definição de cores e status baseada no risco real
+        prob_risco = probs[1]
+    
+    # Definição de cores e status
     if prob_risco > 0.6:
         cor_status, status_texto = '#e74c3c', "ALTO RISCO"
     elif prob_risco > 0.3:
         cor_status, status_texto = '#f1c40f', "PONTO DE ATENÇÃO"
     else:
         cor_status, status_texto = '#2ecc71', "SITUAÇÃO ESTÁVEL"
-    col_res, col_rad = st.columns([1, 2])
 
-    with col_res:
-        st.subheader("Análise")
-        fig_donut = go.Figure(data=[go.Pie(values=[prob_risco, 1-prob_risco], hole=.7, marker_colors=[cor_status, "#f0f2f6"], textinfo='none')])
-        fig_donut.update_layout(annotations=[dict(text=f'{prob_risco*100:.0f}%', x=0.5, y=0.5, font_size=40, showarrow=False, font_color=cor_status)],
-                                showlegend=False, height=220, margin=dict(l=10, r=10, t=10, b=10))
+    # Layout de Colunas
+    col_metrics, col_chart = st.columns([1, 2])
+
+    with col_metrics:
+        st.subheader("Análise de Risco")
+        
+        # Gráfico de Rosca
+        fig_donut = go.Figure(data=[go.Pie(values=[prob_risco, 1 - prob_risco], hole=.7, marker_colors=[cor_status, "#f0f2f6"], textinfo='none')])
+        fig_donut.update_layout(annotations=[dict(text=f'{prob_risco*100:.0f}%', x=0.5, y=0.5, font_size=40, showarrow=False, font_color=cor_status)], showlegend=False, height=250, margin=dict(l=10, r=10, t=10, b=10))
         st.plotly_chart(fig_donut, use_container_width=True)
         st.markdown(f"<h3 style='text-align: center; color: {cor_status};'>{status_texto}</h3>", unsafe_allow_html=True)
-        
+
+        # 4. Plano de Ação (AQUI É ONDE O ERRO OCORRIA)
         st.divider()
         with st.container(border=True):
-            st.markdown(f"**Sugestão de Ação:**")
-            # Lógica de Alerta de Vulnerabilidade Silenciosa
-            if prob_risco <= 0.3 and (input_data['IPS'] < 5 or input_data['IPP'] < 5):
-                st.warning("**Vulnerabilidade Silenciosa Detectada**")
-                st.write("""
-                Embora o risco acadêmico geral seja baixo, os indicadores socioemocionais (IPS/IPP) 
-                estão em nível crítico. O aluno pode estar mantendo as notas, mas sob alto estresse 
-                ou com barreiras de aprendizado não tratadas.
-                """)
-                st.markdown(f"**Foco do Orientador:** Apoio psicopedagógico preventivo em **{ponto_critico.upper()}**.")
+            st.markdown(f"**🎯 Sugestão de Ação:**")
+            
+            # Alerta de Vulnerabilidade Silenciosa (IPS/IPP baixos)
+            if input_data['IPS'] < 5 or input_data['IPP'] < 5:
+                st.warning(f"**Alerta:** Foco em suporte psicopedagógico devido ao baixo índice em {ponto_critico.upper()}.")
+            
+            # Lógica baseada no risco calculado
             if prob_risco > 0.6:
-                st.write(f"**Urgente:** Intervenção focada em **{ponto_critico.upper()}**. O aluno apresenta uma probabilidade alta de defasagem. Recomenda-se:")
-                st.write(f"1. **Reunião de Triagem:** Convocar a família e a equipe de psicologia para entender o cenário atual.")
-                st.write(f"2. **Foco no {ponto_critico.upper()}:** Como este é o menor índice ({nota_critica}), a intervenção deve priorizar esta área.")
-                st.write(f"3. **Plano de Metas:** Estabelecer objetivos semanais de curto prazo para reverter o quadro.")
+                st.write(f"**Urgente:** Intervenção focada em **{ponto_critico.upper()}**. O aluno apresenta probabilidade alta de defasagem.")
             elif prob_risco > 0.3:
-                st.write(f"**Preventivo:** Reforçar acompanhamento em **{ponto_critico.upper()}** e monitorar engajamento.")
-                st.write(f"**Ação Preventiva:** O aluno está em uma zona de alerta. Sugestões:")
-                st.write(f"1. **Reforço Direcionado:** Intensificar o acompanhamento em {ponto_critico.upper()}.")
-                st.write(f"2. **Mentoria:** Aproximar o aluno de um mentor para aumentar o engajamento.")
+                st.write(f"**Preventivo:** Reforçar acompanhamento em **{ponto_critico.upper()}**.")
             else:
-                st.write("**Manutenção:** Continuar incentivando o bom desempenho atual.")
+                st.write("O aluno mantém um desenvolvimento equilibrado.")
 
     with col_chart:
         st.subheader("Perfil Comparativo (Radar)")
