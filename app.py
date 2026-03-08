@@ -30,7 +30,7 @@ model, features, medias = load_models()
 
 # Configuração da Interface
 # Configuração da Aba do Navegador (o ícone da aba ainda precisa ser emoji ou objeto de imagem)
-st.set_page_config(page_title="Passos Mágicos - Mentor Digital", layout="wide", page_icon="🪄")
+
 
 # --- CABEÇALHO COM LOGO PERSONALIZADO ---
 # Criamos duas colunas: uma estreita para o logo e uma larga para o título
