@@ -86,35 +86,40 @@ if submit:
     # 1. PROCESSAMENTO
     input_dict = {'IDA': ida, 'IEG': ieg, 'IPS': ips, 'IPP': ipp, 'IPV': ipv}
     input_df = pd.DataFrame([input_dict])[features]
-    prob_risco = model.predict_proba(input_df)[0][1]
     
-    # Sensibilidade: Risco acima de 40% dispara o alerta
-    alerta_ativo = prob_risco >= 0.40
-    seguranca = (prob_risco) * 100
+    # Probabilidade de ser "Risco" (Classe 1)
+    prob_risco_decimal = model.predict_proba(input_df)[0][1] 
+    
+    # Transformando em porcentagens para exibição
+    porcentagem_risco = prob_risco_decimal * 100
+    porcentagem_estabilidade = 100 - porcentagem_risco
+
+    # Alerta baseado no limiar de 40% de risco
+    alerta_ativo = prob_risco_decimal >= 0.40
 
     st.divider()
 
-    # --- 2. RESULTADOS VISUAIS EM COLUNAS ---
+    # --- 2. RESULTADOS VISUAIS ---
     col_texto, col_rosca, col_radar = st.columns([1.2, 1, 1.5])
-
-    with col_texto:
-        if alerta_ativo:
-            st.error("⚠️ **Diagnóstico: Atenção Necessária**")
-            st.warning(explicar_risco_tecnico(input_dict, prob_risco))
-        else:
-            st.success("✅ **Diagnóstico: Desenvolvimento Estável**")
-            st.info("O aluno apresenta segurança nos indicadores atuais.")
 
     with col_rosca:
         fig_rosca = go.Figure(go.Pie(
-            values=[seguranca, 100 - seguranca],
+            # Ordem: Estabilidade primeiro, Risco depois
+            values=[porcentagem_estabilidade, porcentagem_risco],
             labels=['Estabilidade', 'Risco'],
             hole=.7,
-            marker_colors=['#2ecc71', '#e74c3c'],
-            textinfo='none'
+            marker_colors=['#2ecc71', '#e74c3c'], # Verde para Estabilidade, Vermelho para Risco
+            textinfo='none',
+            sort=False # Importante para manter a ordem dos setores
         ))
-        fig_rosca.update_layout(showlegend=False, height=250, margin=dict(t=0, b=0, l=0, r=0),
-                                annotations=[dict(text=f'{seguranca:.0f}%', x=0.5, y=0.5, font_size=30, showarrow=False)])
+        
+        # O número central deve mostrar a estabilidade (segurança)
+        fig_rosca.update_layout(
+            showlegend=False, 
+            height=250, 
+            margin=dict(t=0, b=0, l=0, r=0),
+            annotations=[dict(text=f'{porcentagem_estabilidade:.0f}%', x=0.5, y=0.5, font_size=30, showarrow=False)]
+        )
         st.plotly_chart(fig_rosca, use_container_width=True)
         st.caption("Índice de Estabilidade do Aluno")
 
