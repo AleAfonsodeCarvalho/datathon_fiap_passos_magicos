@@ -79,23 +79,22 @@ st.markdown("---")
 
 # Processamento e resultados
 # 6. Processamento e Resultados
+# 6. Processamento e Resultados
 if st.button("Executar Análise de Risco", use_container_width=True):
     df_input = pd.DataFrame([input_data])
     
     # Pegamos as probabilidades das duas classes [Classe 0, Classe 1]
     probs = model.predict_proba(df_input)[0]
     
-    # IMPORTANTE: Vamos identificar qual classe representa o risco.
-    # Se a média das notas for ALTA (>6) e a probabilidade da Classe 0 for ALTA,
-    # significa que a Classe 0 é 'Estável' e a Classe 1 é 'Risco'.
+    # Calculamos a média das notas inseridas
     media_atual = df_input.mean(axis=1).values[0]
     
-    # Lógica de correção automática de inversão
-    if media_atual > 6:
-        # Se as notas são boas, o risco deve ser a menor probabilidade
-        prob_risco = min(probs) 
+    # Lógica de Correção de Inversão:
+    # Se a média das notas é alta (> 6.0), o risco real deve ser o menor valor de probabilidade
+    if media_atual > 6.0:
+        prob_risco = min(probs)
     else:
-        # Se as notas são baixas, o risco deve ser a maior probabilidade
+        # Se as notas são baixas, o risco real é o maior valor de probabilidade
         prob_risco = max(probs)
 
     # Definição de cores e status baseada na probabilidade corrigida
