@@ -1,16 +1,15 @@
-==============================================================================
+
 PÓS-TECH FIAP - DATA ANALYTICS
-==============================================================================
+
 PROJETO: Mentor Digital - Sistema Preditivo de Risco de Defasagem
 ENTIDADE: Associação Passos Mágicos
-------------------------------------------------------------------------------
+
 FASE 5: Deep Learning and Unstructured Data
 DATA: 08 de março de 2026
  
 ALUNO: Alexandre Afonso de Carvalho
 RM: 358820
 TURMA: 9DTAT
-==============================================================================
 
 Sobre o Projeto
 O Mentor Digital é uma aplicação preditiva desenvolvida para a Associação Passos Mágicos. Utilizando técnicas de Machine Learning e Analytics Engineering, a ferramenta identifica precocemente alunos em Risco de Defasagem.
@@ -47,6 +46,9 @@ modelo_risco_passos.pkl: Modelo treinado (Random Forest).
 medianas_comparativas.pkl: Dicionário com as medianas dos indicadores para 2024.
 features_list.pkl: Ordem das colunas esperadas pelo modelo.
 passos_magico_logo.png: Identidade visual da ONG.
+
+Página de hospedagem do analisador do risco de defasagem
+https://datathonfiappaappsmagicos-essuh5yqd6avjlhazgaano.streamlit.app/
 
 gradecimentos
 Agradeço à equipe da Associação Passos Mágicos pela oportunidade de aplicar tecnologia em prol de um impacto social real e à FIAP pela jornada de aprendizado nesta Pós-Tech.
