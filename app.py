@@ -1,3 +1,18 @@
+# ==============================================================================
+# PÓS-TECH FIAP - DATA ANALYTICS
+# ==============================================================================
+# PROJETO: Mentor Digital - Sistema Preditivo de Risco de Defasagem
+# ENTIDADE: Associação Passos Mágicos
+# ------------------------------------------------------------------------------
+# FASE 5: Deep Learning and Unstructured Data
+# DATA: 08 de março de 2026
+# 
+# ALUNO: Alexandre Afonso de Carvalho
+# RM: 358820
+# TURMA: 9DTAT
+# ==============================================================================
+
+
 import streamlit as st
 import pandas as pd
 import joblib
