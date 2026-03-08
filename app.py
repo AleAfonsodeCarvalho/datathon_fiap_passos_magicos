@@ -24,6 +24,22 @@ acadêmicos, psicossociais e de engajamento da **Associação Passos Mágicos**.
 
 st.divider()
 
+# Adicionando o descritivo dos índices em um menu retrátil
+with st.expander("📖 Glossário: Entenda os Indicadores (INDE)"):
+    st.markdown("""
+    Os indicadores abaixo compõem o **Índice de Desenvolvimento Educacional (INDE)** e são utilizados pelo modelo para prever a trajetória do aluno:
+    
+    * **IDA (Índice de Desempenho Acadêmico):** Representa a média das notas nas disciplinas principais. É o reflexo direto do aproveitamento escolar.
+    * **IEG (Índice de Engajamento):** Mede o compromisso do aluno com as tarefas, presença nas aulas e participação em atividades extras.
+    * **IPS (Índice Psicossocial):** Avaliação do bem-estar emocional e do contexto social/familiar do aluno, realizada pela equipe de psicologia.
+    * **IPP (Índice de Psicopedagogia):** Foca na evolução cognitiva e na superação de dificuldades de aprendizagem específicas.
+    * **IPV (Índice de Ponto de Virada):** Indica se o aluno atingiu o nível de autonomia e maturidade necessários para progredir com confiança.
+    """)
+
+# ... (seguindo para a parte dos inputs em colunas)
+
+st.divider()
+
 # 2. Entrada de Dados no Corpo Principal
 st.subheader("📝 Inserir Indicadores do Aluno")
 input_data = {}
