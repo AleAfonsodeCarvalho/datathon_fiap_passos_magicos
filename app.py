@@ -14,29 +14,29 @@ GOOGLE_API_KEY = st.sidebar.text_input("Insira sua Gemini API Key", type="passwo
 def gerar_comentario_ia(dados, risco, probabilidade):
     if not GOOGLE_API_KEY:
         return "Insira a chave da API no menu lateral para gerar um comentário humanizado."
-    
+
     genai.configure(api_key=GOOGLE_API_KEY)
     llm = genai.GenerativeModel('gemini-pro')
-    
+
     status = "em risco" if risco == 1 else "estável"
-    
+
     # O "Prompt" é o segredo para a IA ser humana
     prompt = f"""
-    Você é um consultor pedagógico da Associação Passos Mágicos. 
+    Você é um consultor pedagógico da Associação Passos Mágicos.
     Analise os seguintes indicadores de um aluno:
     - Desempenho Acadêmico (IDA): {dados['IDA']}
     - Engajamento (IEG): {dados['IEG']}
     - Socioemocional (IPS): {dados['IPS']}
     - Psicopedagógico (IPP): {dados['IPP']}
     - Ponto de Virada (IPV): {dados['IPV']}
-    
+
     O modelo de IA classificou este aluno como {status} (Probabilidade de risco: {probabilidade*100:.1f}%).
-    
-    Escreva um breve comentário (máximo 4 frases) acolhedor e humanizado para a equipe pedagógica. 
+
+    Escreva um breve comentário (máximo 4 frases) acolhedor e humanizado para a equipe pedagógica.
     Incentive o foco no desenvolvimento do aluno e não apenas na nota.
     Use um tom empático e motivador.
     """
-    
+
     response = llm.generate_content(prompt)
     return response.text
 
@@ -61,15 +61,15 @@ if submit:
     input_data = pd.DataFrame([[ida, ieg, ips, ipp, ipv]], columns=features)
     prediction = model.predict(input_data)[0]
     prob = model.predict_proba(input_data)[0][1]
-    
+
     st.divider()
-    
+
     # Exibe o resultado do Modelo
     if prediction == 1:
         st.error(f"⚠️ **Diagnóstico: Atenção Necessária**")
     else:
         st.success(f"✅ **Diagnóstico: Desenvolvimento Estável**")
-        
+
     # --- NOVIDADE: Bot de IA Generativa ---
     with st.expander("✨ Ver Comentário do Mentor Digital", expanded=True):
         with st.spinner("O Mentor está analisando os dados..."):
