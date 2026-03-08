@@ -169,7 +169,7 @@ st.divider()
 col_f1, col_f2 = st.columns([2, 1])
 
 with col_f1:
-    st.markdown("###Transformando o Brasil através da Educação")
+    st.markdown("Transformando o Brasil através da Educação")
     st.write("A Passos Mágicos transforma vidas através da educação e protagonismo. Este projeto visa apoiar essa missão com dados.")
 
 # --- RODAPÉ FINAL (Fora do bloco 'if st.button', alinhado à esquerda) ---
