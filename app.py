@@ -20,6 +20,7 @@ except:
 # --- 2. FUNÇÕES DE APOIO ---
 
 def explicar_risco_tecnico(dados, prob_risco):
+    # Identifica indicadores abaixo da média desejada
     indicadores_baixos = [k for k, v in dados.items() if v < 7.0]
     nomes_bonitos = {
         'IDA': 'Desempenho Acadêmico', 'IEG': 'Engajamento',
@@ -36,13 +37,13 @@ def explicar_risco_tecnico(dados, prob_risco):
         msg = "Os indicadores atuais refletem um cenário de estabilidade e segurança."
     return msg
 
-def gerar_comentario_ia(dados, risco_ajustado, probabilidade, api_key):
+def gerar_comentario_ia(dados, alerta_ativo, probabilidade, api_key):
     if not api_key or api_key.strip() == "":
         return None
     try:
         genai.configure(api_key=api_key)
         llm = genai.GenerativeModel('gemini-pro')
-        status = "em atenção preventiva" if risco_ajustado else "estável"
+        status = "em atenção preventiva" if alerta_ativo else "estável"
         prompt = f"""
         Você é um consultor pedagógico da Associação Passos Mágicos.
         Analise os indicadores: IDA:{dados['IDA']}, IEG:{dados['IEG']}, IPS:{dados['IPS']}, IPP:{dados['IPP']}, IPV:{dados['IPV']}.
@@ -51,16 +52,20 @@ def gerar_comentario_ia(dados, risco_ajustado, probabilidade, api_key):
         """
         response = llm.generate_content(prompt)
         return response.text
-    except:
-        return "ℹ️ O Mentor Digital está indisponível agora. O diagnóstico técnico permanece válido."
+    except Exception as e:
+        return f"ℹ️ O Mentor Digital está temporariamente indisponível. (Erro: {str(e)})"
 
 # --- 3. INTERFACE STREAMLIT ---
 st.set_page_config(page_title="Mentor Passos Mágicos", layout="wide", page_icon="🌱")
 
-st.sidebar.header("Configurações de IA")
+st.sidebar.header("⚙️ Configurações")
 GOOGLE_API_KEY = st.sidebar.text_input("Gemini API Key", type="password")
 st.sidebar.markdown("---")
 st.sidebar.caption("Datathon Fase 5 | FIAP Pós-Tech")
+
+# Validação de segurança das colunas (Opcional, mas recomendado)
+if st.sidebar.checkbox("Verificar colunas do modelo"):
+    st.sidebar.write(f"Colunas esperadas: {features}")
 
 st.title("🌱 Mentor Digital Passos Mágicos")
 st.markdown("Plataforma de Diagnóstico Preventivo de Defasagem Escolar")
@@ -68,9 +73,9 @@ st.markdown("Plataforma de Diagnóstico Preventivo de Defasagem Escolar")
 with st.expander("📖 Guia Rápido de Indicadores"):
     col_a, col_b = st.columns(2)
     with col_a:
-        st.write("📚 IDA: Desempenho Escolar | 🧠 IPP: Processo de Aprendizado")
+        st.write("📚 **IDA**: Desempenho Escolar | 🧠 **IPP**: Processo de Aprendizado")
     with col_b:
-        st.write("🔥 IEG: Motivação e Frequência | ❤️ IPS: Relações e Emoções")
+        st.write("🔥 **IEG**: Motivação e Frequência | ❤️ **IPS**: Relações e Emoções")
 
 with st.form("predict_form"):
     st.subheader("Inserir Indicadores do Aluno")
@@ -83,84 +88,86 @@ with st.form("predict_form"):
     submit = st.form_submit_button("Analisar Desempenho")
 
 if submit:
-    # 1. PROCESSAMENTO
+    # 1. PROCESSAMENTO DE DADOS
     input_dict = {'IDA': ida, 'IEG': ieg, 'IPS': ips, 'IPP': ipp, 'IPV': ipv}
-    input_df = pd.DataFrame([input_dict])[features]
     
-    # Probabilidade de ser "Risco" (Classe 1)
-    prob_risco_decimal = model.predict_proba(input_df)[0][1] 
+    # Criar DataFrame garantindo a ordem das features do modelo
+    try:
+        input_df = pd.DataFrame([input_dict])[features]
+        
+        # Predição de Probabilidade (Classe 1 = Risco)
+        prob_risco_decimal = model.predict_proba(input_df)[0][1]
+        
+        # Cálculos de Exibição
+        porcentagem_risco = prob_risco_decimal * 100
+        porcentagem_estabilidade = 100 - porcentagem_risco
+        alerta_ativo = prob_risco_decimal >= 0.40 # Limiar de 40%
+
+        st.divider()
+
+        # --- 2. RESULTADOS VISUAIS ---
+        col_texto, col_rosca, col_radar = st.columns([1.2, 1, 1.5])
+
+        with col_texto:
+            if alerta_ativo:
+                st.error("⚠️ **Diagnóstico: Atenção Necessária**")
+                st.warning(explicar_risco_tecnico(input_dict, prob_risco_decimal))
+            else:
+                st.success("✅ **Diagnóstico: Desenvolvimento Estável**")
+                st.info("O aluno apresenta segurança nos indicadores atuais.")
+
+        with col_rosca:
+            fig_rosca = go.Figure(go.Pie(
+                values=[porcentagem_estabilidade, porcentagem_risco],
+                labels=['Estabilidade', 'Risco'],
+                hole=.7,
+                marker_colors=['#2ecc71', '#e74c3c'],
+                textinfo='none',
+                sort=False
+            ))
+            fig_rosca.update_layout(
+                showlegend=False, 
+                height=250, 
+                margin=dict(t=0, b=0, l=0, r=0),
+                annotations=[dict(text=f'{porcentagem_estabilidade:.0f}%', x=0.5, y=0.5, font_size=30, showarrow=False)]
+            )
+            st.plotly_chart(fig_rosca, use_container_width=True)
+            st.caption("<center>Índice de Estabilidade</center>", unsafe_allow_html=True)
+
+        with col_radar:
+            categories = ['IDA', 'IEG', 'IPS', 'IPP', 'IPV']
+            fig_radar = go.Figure()
+            fig_radar.add_trace(go.Scatterpolar(r=[ida, ieg, ips, ipp, ipv], theta=categories, fill='toself', name='Este Aluno'))
+            fig_radar.add_trace(go.Scatterpolar(r=[baselines['historica'][c] for c in categories], theta=categories, name='Média Histórica', line_dash='dot'))
+            fig_radar.add_trace(go.Scatterpolar(r=[baselines['2024'][c] for c in categories], theta=categories, name='Média 2024', line_color='green'))
+            
+            fig_radar.update_layout(
+                polar=dict(radialaxis=dict(visible=True, range=[0, 10])),
+                height=350, 
+                margin=dict(t=30, b=30, l=80, r=80),
+                legend=dict(orientation="h", yanchor="bottom", y=1.1, xanchor="center", x=0.5)
+            )
+            st.plotly_chart(fig_radar, use_container_width=True)
+
+        # --- 3. COMENTÁRIO IA ---
+        res_ia = gerar_comentario_ia(input_dict, alerta_ativo, prob_risco_decimal, GOOGLE_API_KEY)
+        if res_ia:
+            with st.expander("✨ Análise Humanizada do Mentor", expanded=True):
+                st.write(res_ia)
+        elif not GOOGLE_API_KEY:
+            st.info("💡 Insira sua Gemini API Key na barra lateral para habilitar o comentário da IA.")
+
+    except Exception as e:
+        st.error(f"Erro no processamento: {e}")
+        st.info("Verifique se as colunas em 'features_list.pkl' coincidem com os nomes dos inputs.")
+
+# --- 4. GLOSSÁRIO ---
+st.markdown("---")
+with st.expander("❓ Entenda como ler este diagnóstico"):
+    st.markdown("""
+    ### **O que é o Índice de Estabilidade?**
+    Representa a segurança do desenvolvimento do aluno. Se o modelo detecta **20% de risco**, o aluno possui **80% de estabilidade**. 
     
-    # Transformando em porcentagens para exibição
-    porcentagem_risco = prob_risco_decimal * 100
-    porcentagem_estabilidade = 100 - porcentagem_risco
-
-    # Alerta baseado no limiar de 40% de risco
-    alerta_ativo = prob_risco_decimal >= 0.40
-
-    st.divider()
-
-    # --- 2. RESULTADOS VISUAIS ---
-    col_texto, col_rosca, col_radar = st.columns([1.2, 1, 1.5])
-
-    with col_rosca:
-        fig_rosca = go.Figure(go.Pie(
-            # Ordem: Estabilidade primeiro, Risco depois
-            values=[porcentagem_estabilidade, porcentagem_risco],
-            labels=['Estabilidade', 'Risco'],
-            hole=.7,
-            marker_colors=['#2ecc71', '#e74c3c'], # Verde para Estabilidade, Vermelho para Risco
-            textinfo='none',
-            sort=False # Importante para manter a ordem dos setores
-        ))
-        
-        # O número central deve mostrar a estabilidade (segurança)
-        fig_rosca.update_layout(
-            showlegend=False, 
-            height=250, 
-            margin=dict(t=0, b=0, l=0, r=0),
-            annotations=[dict(text=f'{porcentagem_estabilidade:.0f}%', x=0.5, y=0.5, font_size=30, showarrow=False)]
-        )
-        st.plotly_chart(fig_rosca, use_container_width=True)
-        st.caption("Índice de Estabilidade do Aluno")
-
-    with col_radar:
-        categories = ['IDA', 'IEG', 'IPS', 'IPP', 'IPV']
-        fig_radar = go.Figure()
-        fig_radar.add_trace(go.Scatterpolar(r=[ida, ieg, ips, ipp, ipv], theta=categories, fill='toself', name='Este Aluno'))
-        fig_radar.add_trace(go.Scatterpolar(r=[baselines['historica'][c] for c in categories], theta=categories, name='Média Histórica', line_dash='dot'))
-        fig_radar.add_trace(go.Scatterpolar(r=[baselines['2024'][c] for c in categories], theta=categories, name='Média 2024', line_color='green'))
-        
-        fig_radar.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 10])), height=350, margin=dict(t=30, b=30, l=80, r=80))
-        st.plotly_chart(fig_radar, use_container_width=True)
-
-    # --- 3. COMENTÁRIO IA ---
-    res_ia = gerar_comentario_ia(input_dict, alerta_ativo, prob_risco, GOOGLE_API_KEY)
-    if res_ia:
-        with st.expander("✨ Análise Humanizada do Mentor", expanded=True):
-            st.write(res_ia)
-    elif not GOOGLE_API_KEY:
-        st.info("💡 Insira sua API Key na lateral para habilitar o comentário da IA.")
-        
-    # --- 4. GLOSSÁRIO E INTERPRETAÇÃO (Abaixo de tudo) ---
-    st.markdown("---")
-    with st.expander("❓ Entenda como ler este diagnóstico"):
-        st.markdown("""
-        ### **O que é o Índice de Estabilidade?**
-        Este índice representa a segurança do desenvolvimento do aluno. Ele é o inverso da probabilidade de risco: 
-        se o modelo detecta **20% de risco**, o aluno possui **80% de estabilidade**. 
-        
-        * **Acima de 60%:** Trajetória estável. O foco deve ser a manutenção e excelência.
-        * **Abaixo de 60%:** Alerta preventivo. Indica que, estatisticamente, o aluno apresenta padrões que precedem a defasagem escolar.
-
-        ### **Como ler o Gráfico Radar?**
-        O gráfico radar compara o aluno atual com dois referenciais:
-        1.  **Linha Azul (Este Aluno):** Desempenho atual inserido.
-        2.  **Linha Pontilhada (Média Histórica):** Desempenho médio de todos os alunos desde o início do programa.
-        3.  **Linha Verde (Média 2024):** O padrão de desempenho do último ano letivo.
-        
-        *Se a linha azul estiver "para dentro" das outras linhas, aquele indicador específico (ex: IEG ou IPS) precisa de atenção imediata.*
-        """)
-        teste = pd.DataFrame([[7.8, 8.4, 7.0, 7.0, 7.0]], columns=features)
-print(model.predict_proba(teste))
-
-  
+    * **Acima de 60%:** Trajetória estável.
+    * **Abaixo de 60%:** Alerta preventivo (Indica padrões que costumam preceder a defasagem).
+    """)
