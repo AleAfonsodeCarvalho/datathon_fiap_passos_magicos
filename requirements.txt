@@ -1,7 +1,5 @@
 streamlit
 pandas
 joblib
-numpy
-plotly
 scikit-learn
 google-generativeai
