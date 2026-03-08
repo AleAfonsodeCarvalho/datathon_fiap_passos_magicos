@@ -207,4 +207,19 @@ if st.button("Executar Análise de Risco", use_container_width=True):
 
 # Rodapé
 st.divider()
-st.caption("Solução desenvolvida para a Associação Passos Mágicos | Datathon Fase 5")
+
+# Criando colunas no rodapé para organizar a informação
+col_footer1, col_footer2 = st.columns([2, 1])
+
+with col_footer1:
+    st.markdown("""
+    ### 🪄 Sobre a Passos Mágicos
+    A **Associação Passos Mágicos** atua há mais de 32 anos transformando a vida de crianças e jovens 
+    em situação de vulnerabilidade através da educação, auxílio psicológico e ampliação de visão de mundo.
+    """)
+
+with col_footer2:
+    st.markdown("<br>", unsafe_allow_html=True) # Espaçamento
+    st.link_button("Conheça o site oficial", "https://passosmagicos.org.br/")
+
+st.caption("Protótipo desenvolvido para o Datathon Fase 5 - Pós Tech | Mentor Digital © 2026")
