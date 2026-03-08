@@ -92,17 +92,21 @@ st.markdown("---")
 # 4. Processamento e Exibição de Resultados
 # 6. Processamento e Resultados
 # 6. Processamento e Resultados
+# 6. Processamento e Resultados
 if st.button("Executar Análise de Risco", use_container_width=True):
-    df_input = pd.DataFrame([input_data])    
+    df_input = pd.DataFrame([input_data])
+    
     # Pegamos a probabilidade de cada classe
     # [0] costuma ser Risco e [1] Estável no seu modelo
     probs = model.predict_proba(df_input)[0]
-    prob_risco = probs[0]      
+    prob_risco = probs[0]  
+    
     # Verificação de segurança: se as notas são altas (>7) e o risco deu alto (>0.5), 
     # significa que as classes estão invertidas no arquivo pkl.
     media_notas = df_input.mean(axis=1).values[0]
     if media_notas > 7 and prob_risco > 0.5:
-        prob_risco = probs[1] # Inverte para refletir a realidade dos dados    
+        prob_risco = probs[1] # Inverte para refletir a realidade dos dados
+    
     # Definição de cores e status baseada no risco real
     if prob_risco > 0.6:
         cor_status, status_texto = '#e74c3c', "ALTO RISCO"
@@ -110,18 +114,16 @@ if st.button("Executar Análise de Risco", use_container_width=True):
         cor_status, status_texto = '#f1c40f', "PONTO DE ATENÇÃO"
     else:
         cor_status, status_texto = '#2ecc71', "SITUAÇÃO ESTÁVEL"
+
     col_res, col_rad = st.columns([1, 2])
 
-    with col_metrics:
-        st.subheader("Análise de Risco")
-        fig_donut = go.Figure(data=[go.Pie(values=[prob_risco, 1 - prob_risco], hole=.7, marker_colors=[cor_status, "#f0f2f6"], textinfo='none')])
+    with col_res:
+        st.subheader("Análise")
+        fig_donut = go.Figure(data=[go.Pie(values=[prob_risco, 1-prob_risco], hole=.7, marker_colors=[cor_status, "#f0f2f6"], textinfo='none')])
         fig_donut.update_layout(annotations=[dict(text=f'{prob_risco*100:.0f}%', x=0.5, y=0.5, font_size=40, showarrow=False, font_color=cor_status)],
-                                showlegend=False, height=250, margin=dict(l=10, r=10, t=10, b=10))
+                                showlegend=False, height=220, margin=dict(l=10, r=10, t=10, b=10))
         st.plotly_chart(fig_donut, use_container_width=True)
         st.markdown(f"<h3 style='text-align: center; color: {cor_status};'>{status_texto}</h3>", unsafe_allow_html=True)
-
-        ponto_critico = min(input_data, key=input_data.get)
-        nota_critica = input_data[ponto_critico]
         
         st.divider()
         with st.container(border=True):
