@@ -48,7 +48,7 @@ with col_titulo:
 
 st.markdown("Esta ferramenta auxilia na identificação precoce de alunos em risco utilizando indicadores da **Associação Passos Mágicos**.")
 
-with st.expander("🎯 A Importância da Avaliação de Risco"):
+with st.expander("A Importância da Avaliação de Risco"):
     st.write("""
     A avaliação de risco de defasagem não é apenas um número, mas uma ferramenta de **intervenção precoce**. 
     O objetivo do Mentor Digital é identificar sinais de alerta antes que a defasagem se torne 
