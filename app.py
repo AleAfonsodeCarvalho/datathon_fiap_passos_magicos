@@ -61,7 +61,7 @@ with st.expander("Glossário: Entenda os Indicadores (INDE)"):
 st.divider()
 
 # Entrada de dados
-st.subheader("📝 Inserir Indicadores do Aluno")
+st.subheader("Inserir Indicadores do Aluno")
 input_data = {}
 
 # Garantir que features é lista e não vazia
@@ -78,27 +78,27 @@ for i, feature in enumerate(features):
 st.markdown("---")
 
 # Processamento e resultados
+# 6. Processamento e Resultados
 if st.button("Executar Análise de Risco", use_container_width=True):
-    # Garantir ordem das colunas igual à 'features'
-    df_input = pd.DataFrame([input_data], columns=features)
-
-    # Prever probabilidades (verifica se modelo tem predict_proba)
-    try:
-        probs = model.predict_proba(df_input)[0]
-    except Exception as e:
-        st.error(f"Erro na previsão: {e}")
-        st.stop()
-
-    # Média atual
+    df_input = pd.DataFrame([input_data])
+    
+    # Pegamos as probabilidades das duas classes [Classe 0, Classe 1]
+    probs = model.predict_proba(df_input)[0]
+    
+    # IMPORTANTE: Vamos identificar qual classe representa o risco.
+    # Se a média das notas for ALTA (>6) e a probabilidade da Classe 0 for ALTA,
+    # significa que a Classe 0 é 'Estável' e a Classe 1 é 'Risco'.
     media_atual = df_input.mean(axis=1).values[0]
-
-    # Determinar probabilidade de risco com heurística fornecida
+    
+    # Lógica de correção automática de inversão
     if media_atual > 6:
-        prob_risco = float(min(probs))
+        # Se as notas são boas, o risco deve ser a menor probabilidade
+        prob_risco = min(probs) 
     else:
-        prob_risco = float(max(probs))
+        # Se as notas são baixas, o risco deve ser a maior probabilidade
+        prob_risco = max(probs)
 
-    # Status e cor
+    # Definição de cores e status baseada na probabilidade corrigida
     if prob_risco > 0.6:
         cor_status, status_texto = '#e74c3c', "ALTO RISCO"
     elif prob_risco > 0.3:
