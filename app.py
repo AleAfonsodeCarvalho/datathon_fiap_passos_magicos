@@ -167,31 +167,37 @@ if st.button("Executar Análise de Risco", use_container_width=True):
             st.markdown(f"**Sugestão de Ação:**")
             with st.container(border=True):
             # Lógica de Alerta de Vulnerabilidade Silenciosa
-           with st.container(border=True):
-            # O código abaixo DEVE ter 4 espaços a mais que o 'with' acima
-            if prob_risco <= 0.3 and (input_data['IPS'] < 5 or input_data['IPP'] < 5):
-                st.warning("⚠️ **Vulnerabilidade Silenciosa Detectada**")
-                st.write("""
-                Embora o risco acadêmico geral seja baixo, os indicadores socioemocionais (IPS/IPP) 
-                estão em nível crítico. Recomenda-se apoio psicopedagógico preventivo.
-                """)                          
-            else:
-                st.markdown(f"**Foco do Orientador:** Atenção especial em **{ponto_critico.upper()}**.")  
-                if prob_risco > 0.6:
-                    st.write(f"**Urgente:** Intervenção focada em **{ponto_critico.upper()}**. O aluno apresenta uma probabilidade alta de defasagem. Recomenda-se:")
-                    st.write(f"1. **Reunião de Triagem:** Convocar a família e a equipe de psicologia para entender o cenário atual.")
-                    st.write(f"2. **Foco no {ponto_critico.upper()}:** Como este é o menor índice ({nota_critica}), a intervenção deve priorizar esta área.")
-                    st.write(f"3. **Plano de Metas:** Estabelecer objetivos semanais de curto prazo para reverter o quadro.")
-            elif prob_risco > 0.3:
-                st.write(f"**Preventivo:** Reforçar acompanhamento em **{ponto_critico.upper()}** e monitorar engajamento.")
-                st.write(f"**Ação Preventiva:** O aluno está em uma zona de alerta. Sugestões:")
-                st.write(f"1. **Reforço Direcionado:** Intensificar o acompanhamento em {ponto_critico.upper()}.")
-                st.write(f"2. **Mentoria:** Aproximar o aluno de um mentor para aumentar o engajamento.")
-            else:
-                st.write("**Manutenção:** Continuar incentivando o bom desempenho atual.")
+          # --- BLOCO CORRIGIDO E ALINHADO ---
+with st.container(border=True):
+    # Primeiro nível: Checagem de vulnerabilidade silenciosa (IPS/IPP)
+    if prob_risco <= 0.3 and (input_data['IPS'] < 5 or input_data['IPP'] < 5):
+        st.warning("⚠️ **Vulnerabilidade Silenciosa Detectada**")
+        st.write("""
+        Embora o risco acadêmico geral seja baixo, os indicadores socioemocionais (IPS/IPP) 
+        estão em nível crítico. Recomenda-se apoio psicopedagógico preventivo.
+        """)
+        st.markdown(f"**Foco do Orientador:** Atenção especial em **{ponto_critico.upper()}**.")
+
+    # Segundo nível: Se não for vulnerabilidade silenciosa, segue a lógica de risco normal
+    elif prob_risco > 0.6:
+        st.error("⚠️ **ALTO RISCO**")
+        st.write(f"**Urgente:** Intervenção focada em **{ponto_critico.upper()}**. Recomenda-se:")
+        st.write("1. **Triagem:** Convocar família e psicologia.")
+        st.write(f"2. **Ação:** Priorizar {ponto_critico.upper()} (Nota: {nota_critica}).")
+        st.write("3. **Metas:** Estabelecer objetivos de curto prazo.")
+
+    elif prob_risco > 0.3:
+        st.warning("⚠️ **PONTO DE ATENÇÃO**")
+        st.write(f"**Preventivo:** Reforçar acompanhamento em **{ponto_critico.upper()}**.")
+        st.write("1. **Reforço:** Intensificar monitoria.")
+        st.write("2. **Mentoria:** Aproximar o aluno de um mentor.")
+
+    else:
+        st.success("✅ **SITUAÇÃO ESTÁVEL**")
+        st.write("**Manutenção:** Continuar incentivando o bom desempenho atual.")
 
     with col_chart:
-        st.subheader("📊 Perfil Comparativo (Radar)")
+        st.subheader("Perfil Comparativo (Radar)")
         
         categorias = [f.replace('_', ' ') for f in features]
         valores_aluno = list(input_data.values())
