@@ -64,11 +64,15 @@ with col_titulo:
 
 st.markdown("Esta ferramenta auxilia na identificação precoce de alunos em risco utilizando indicadores da **Associação Passos Mágicos**.")
 
-with st.expander("Glossário: Entenda os Indicadores (INDE)"):
+with st.expander("📖 Glossário: Entenda os Indicadores (INDE)"):
+
     st.markdown("""
     Os indicadores abaixo compõem o **Índice de Desenvolvimento Educacional (INDE)**:
-    * **IDA:** Desempenho Acadêmico | **IEG:** Engajamento | **IPS:** Psicossocial
-    * **IPP:** Psicopedagogia | **IPV:** Ponto de Virada (Autonomia)
+    * **IDA (Índice de Desempenho Acadêmico):** Média das notas nas disciplinas principais (Português e Matemática).
+    * **IEG (Índice de Engajamento):** Mede o compromisso com tarefas, presença e participação.
+    * **IPS (Índice Psicossocial):** Bem-estar emocional e contexto familiar (avaliado pela Psicologia).
+    * **IPP (Índice de Psicopedagogia):** Evolução cognitiva e superação de barreiras de aprendizagem.
+    * **IPV (Índice de Ponto de Virada):** Maturidade e autonomia para o desenvolvimento independente.
     """)
 
 st.divider()
