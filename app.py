@@ -6,7 +6,7 @@ import joblib
 st.title("Previsão de Risco de Defasagem - Passos Mágicos")
 
 # Carregar o modelo
-model = joblib.load('modelo_treinado.pkl')
+model = joblib.load('modelo_risco_passos.pkl')
 
 # Inputs baseados nos indicadores do Datathon
 st.header("Indicadores do Aluno")
