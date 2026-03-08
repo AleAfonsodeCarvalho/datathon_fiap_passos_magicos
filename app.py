@@ -178,8 +178,7 @@ with col_f1:
     essa 'fórmula mágica' chegue a quem mais precisa no momento certo.
     
     [Visite o site da Associação](https://passosmagicos.org.br/)
-    """)
-    
+    """)    
     st.link_button("Conheça o site oficial", "https://passosmagicos.org.br/")
 
 with col_f2:
