@@ -82,24 +82,24 @@ st.markdown("---")
 # 6. Processamento e Resultados
 # Processamento e resultados
 if st.button("Executar Análise de Risco", use_container_width=True):
-    # Garantir ordem das colunas igual à 'features'
-    df_input = pd.DataFrame([input_data], columns=features)
-
-    # Prever probabilidades (verifica se modelo tem predict_proba)
-    try:
-        probs = model.predict_proba(df_input)[0]
-    except Exception as e:
-        st.error(f"Erro na previsão: {e}")
-        st.stop()
-
-    # Média atual
-    media_atual = df_input.mean(axis=1).values[0]
-
-    # Determinar probabilidade de risco com heurística fornecida
-    if media_atual > 6:
-        prob_risco = float(min(probs))
+    df_input = pd.DataFrame([input_data])
+    
+    # Pegamos as probabilidades de todas as classes
+    probs = model.predict_proba(df_input)[0]
+    
+    # Calculamos a média simples dos indicadores inseridos pelo usuário
+    media_indicadores = df_input.mean(axis=1).values[0]
+    
+    # LÓGICA DE CORREÇÃO EFETIVA:
+    # Se a média das notas for alta (ex: > 5.0), o risco deve ser o MENOR valor das probabilidades.
+    # Se a média for baixa (<= 5.0), o risco deve ser o MAIOR valor das probabilidades.
+    if media_indicadores > 5.0:
+        prob_risco = min(probs)
     else:
-        prob_risco = float(max(probs))
+        prob_risco = max(probs)
+
+    # Garantimos que a probabilidade de estabilidade seja o inverso
+    prob_estabilidade = 1 - prob_risco
 
     # Status e cor
     if prob_risco > 0.6:
