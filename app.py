@@ -13,8 +13,7 @@ col_logo, col_titulo = st.columns([1, 4])
 with col_logo:
     st.image(logo_passos, width=150) # Ajuste a largura conforme necessário
 
-with col_titulo:
-    st.title("Mentor Digital: Analisador de Risco de Defasagem")
+
 
 # 1. Carregamento dos artefatos processados
 @st.cache_resource
