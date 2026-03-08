@@ -139,20 +139,20 @@ if st.button("Executar Análise de Risco", use_container_width=True):
         ipp = input_data.get('IPP', None)
 
         if prob_risco <= 0.3 and (ips is not None and ipp is not None) and (ips < 5 or ipp < 5):
-            st.warning("⚠️ **Vulnerabilidade Silenciosa Detectada**")
+            st.warning("**Vulnerabilidade Silenciosa Detectada**")
             st.write("""
             Embora o risco acadêmico geral seja baixo, os indicadores socioemocionais (IPS/IPP)
             estão em nível crítico. Recomenda-se apoio psicopedagógico preventivo.
             """)
             st.markdown(f"**Foco do Orientador:** Atenção especial em **{ponto_critico.replace('_',' ').upper()}**.")
         elif prob_risco > 0.6:
-            st.error("⚠️ **ALTO RISCO**")
+            st.error("**ALTO RISCO**")
             st.write(f"**Urgente:** Intervenção focada em **{ponto_critico.replace('_',' ').upper()}**.")
         elif prob_risco > 0.3:
-            st.warning("⚠️ **PONTO DE ATENÇÃO**")
+            st.warning("**PONTO DE ATENÇÃO**")
             st.write(f"**Preventivo:** Reforçar acompanhamento em **{ponto_critico.replace('_',' ').upper()}**.")
         else:
-            st.success("✅ **SITUAÇÃO ESTÁVEL**")
+            st.success("**SITUAÇÃO ESTÁVEL**")
             st.write("**Manutenção:** Continuar incentivando o bom desempenho atual.")
 
     with col_chart:
@@ -185,6 +185,7 @@ if st.button("Executar Análise de Risco", use_container_width=True):
         **Como interpretar o gráfico:**
         * **Área Cinza:** Representa a média histórica dos alunos da Passos Mágicos.
         * **Área Colorida:** Representa o desempenho atual deste aluno. 
+        * **Baseado no histórico dos alunos da instituição entre os anos de 2022 até 2024
         """)
 
 st.divider()
