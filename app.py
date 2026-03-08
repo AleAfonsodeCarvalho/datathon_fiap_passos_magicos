@@ -38,7 +38,7 @@ if submit:
     # 1. PREDIÇÃO
     input_dict = {'IDA': ida, 'IEG': ieg, 'IPS': ips, 'IPP': ipp, 'IPV': ipv}
     input_df = pd.DataFrame([input_dict])[features]
-    prob_risco = (model.predict_proba(input_df)[0][1])
+    prob_risco = 1-(model.predict_proba(input_df)[0][1])
     seguranca = (1 - prob_risco) * 100
 
     st.divider()
