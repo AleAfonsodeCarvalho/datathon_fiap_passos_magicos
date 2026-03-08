@@ -89,24 +89,20 @@ for i, feature in enumerate(features):
 
 st.markdown("---")
 
-# 4. Processamento e Exibição de Resultados
-# 6. Processamento e Resultados
-# 6. Processamento e Resultados
-# 6. Processamento e Resultados
+
+# 4. Processamento e Resultados
+
 if st.button("Executar Análise de Risco", use_container_width=True):
-    df_input = pd.DataFrame([input_data])
-    
+    df_input = pd.DataFrame([input_data])    
     # Pegamos a probabilidade de cada classe
     # [0] costuma ser Risco e [1] Estável no seu modelo
     probs = model.predict_proba(df_input)[0]
-    prob_risco = probs[0]  
-    
+    prob_risco = probs[0]      
     # Verificação de segurança: se as notas são altas (>7) e o risco deu alto (>0.5), 
     # significa que as classes estão invertidas no arquivo pkl.
     media_notas = df_input.mean(axis=1).values[0]
     if media_notas > 7 and prob_risco > 0.5:
-        prob_risco = probs[1] # Inverte para refletir a realidade dos dados
-    
+        prob_risco = probs[1] # Inverte para refletir a realidade dos dados    
     # Definição de cores e status baseada no risco real
     if prob_risco > 0.6:
         cor_status, status_texto = '#e74c3c', "ALTO RISCO"
@@ -114,7 +110,6 @@ if st.button("Executar Análise de Risco", use_container_width=True):
         cor_status, status_texto = '#f1c40f', "PONTO DE ATENÇÃO"
     else:
         cor_status, status_texto = '#2ecc71', "SITUAÇÃO ESTÁVEL"
-
     col_res, col_rad = st.columns([1, 2])
 
     with col_res:
