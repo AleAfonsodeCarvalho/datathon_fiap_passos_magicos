@@ -185,7 +185,7 @@ if st.button("Executar Análise de Risco", use_container_width=True):
         **Como interpretar o gráfico:**
         * **Área Cinza:** Representa a média histórica dos alunos da Passos Mágicos.
         * **Área Colorida:** Representa o desempenho atual deste aluno. 
-        * **Baseado no histórico dos alunos da instituição entre os anos de 2022 até 2024
+        * **Baseado no histórico dos alunos da instituição entre os anos de 2022 até 2024**
         """)
 
 st.divider()
