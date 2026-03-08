@@ -81,26 +81,36 @@ st.markdown("---")
 # 6. Processamento e Resultados
 # 6. Processamento e Resultados
 # Processamento e resultados
+# 6. Processamento e Resultados
 if st.button("Executar Análise de Risco", use_container_width=True):
     df_input = pd.DataFrame([input_data])
     
-    # Pegamos as probabilidades de todas as classes
+    # 1. Cálculo da Probabilidade Bruta da IA
     probs = model.predict_proba(df_input)[0]
     
-    # Calculamos a média simples dos indicadores inseridos pelo usuário
-    media_indicadores = df_input.mean(axis=1).values[0]
+    # 2. Cálculo da Média Real do Aluno (A "Verdade" dos Dados)
+    # Atribuímos pesos se necessário, mas a média simples já resolve a inversão
+    media_aluno = df_input.mean(axis=1).values[0]
     
-    # LÓGICA DE CORREÇÃO EFETIVA:
-    # Se a média das notas for alta (ex: > 5.0), o risco deve ser o MENOR valor das probabilidades.
-    # Se a média for baixa (<= 5.0), o risco deve ser o MAIOR valor das probabilidades.
-    if media_indicadores > 5.0:
-        prob_risco = min(probs)
+    # 3. AJUSTE DE CONFIANÇA (Lógica Híbrida)
+    # Se o aluno é excelente (media > 7), o risco DEVE ser baixo.
+    # Se o aluno é crítico (media < 4), o risco DEVE ser alto.
+    # Entre 4 e 7, deixamos a IA atuar com um ajuste de escala.
+    
+    if media_aluno >= 8.0:
+        # Forçamos o risco para a faixa estável (ajustando a sensibilidade da IA)
+        prob_risco = min(probs) * (1 - (media_aluno/10))
+    elif media_aluno <= 4.0:
+        # Forçamos o risco para a faixa alta
+        prob_risco = max(probs) * (1 + (1 - media_aluno/10))
+        prob_risco = min(prob_risco, 0.95) # Teto de 95%
     else:
-        prob_risco = max(probs)
+        # Na zona de dúvida, pegamos o valor da IA mas corrigimos a inversão
+        # Se media é razoável, risco deve ser a menor das probabilidades
+        prob_risco = min(probs) if media_aluno > 5.5 else max(probs)
 
-    # Garantimos que a probabilidade de estabilidade seja o inverso
-    prob_estabilidade = 1 - prob_risco
-
+    # Garantir que o valor final esteja entre 0 e 1
+    prob_risco = max(0.05, min(0.99, prob_risco))
     # Status e cor
     if prob_risco > 0.6:
         cor_status, status_texto = '#e74c3c', "ALTO RISCO"
