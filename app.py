@@ -206,20 +206,44 @@ if st.button("Executar Análise de Risco", use_container_width=True):
         """)
 
 # Rodapé
+s# --- RODAPÉ FINAL COM VÍDEO INSTITUCIONAL ---
 st.divider()
 
-# Criando colunas no rodapé para organizar a informação
 col_footer1, col_footer2 = st.columns([2, 1])
 
 with col_footer1:
     st.markdown("""
-    ### 🪄 Sobre a Passos Mágicos
-    A **Associação Passos Mágicos** atua há mais de 32 anos transformando a vida de crianças e jovens 
-    em situação de vulnerabilidade através da educação, auxílio psicológico e ampliação de visão de mundo.
+    ### 🪄 Transformando o Brasil através da Educação
+    Como vimos na história da Júlia no vídeo ao lado, a **Passos Mágicos** não entrega apenas ensino, 
+    mas sim **perspectiva**. Este projeto de Analytics Engineering visa garantir que nenhum aluno 
+    perca essa perspectiva por falta de uma intervenção no momento certo.
     """)
+    st.link_button("Acesse o Site Oficial", "https://passosmagicos.org.br/")
+
+with col_footer2:
+    # Exibição do vídeo diretamente na aplicação
+    st.video("https://youtu.be/hT_jOmLzpH4")
+    st.caption("Assista: Qual a importância de um sonho? - Manifesto Passos Mágicos")
+
+
+
+# Rodapé
+st.divider()
+
+with st.container():
+    st.info("""
+    **Você sabia?** O programa da Passos Mágicos inclui educação de qualidade, suporte psicopedagógico e 
+    atividades de protagonismo. Este modelo preditivo é uma ferramenta de apoio para que 
+    essa 'fórmula mágica' chegue a quem mais precisa no momento certo.
+    
+    [Visite o site da Associação](https://passosmagicos.org.br/)
+    """)
+    
+st.divider()
 
 with col_footer2:
     st.markdown("<br>", unsafe_allow_html=True) # Espaçamento
     st.link_button("Conheça o site oficial", "https://passosmagicos.org.br/")
 
 st.caption("Protótipo desenvolvido para o Datathon Fase 5 - Pós Tech | Mentor Digital © 2026")
+
