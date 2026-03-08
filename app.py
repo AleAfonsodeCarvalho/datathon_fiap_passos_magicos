@@ -175,7 +175,8 @@ with col_f1:
      st.info("""
     **Você sabia?** O programa da Passos Mágicos inclui educação de qualidade, suporte psicopedagógico e 
     atividades de protagonismo. Este modelo preditivo é uma ferramenta de apoio para que 
-    essa 'fórmula mágica' chegue a quem mais precisa no momento certo.""")
+    essa 'fórmula mágica' chegue a quem mais precisa no momento certo.
+    """)
     
     st.link_button("Conheça o site oficial", "https://passosmagicos.org.br/")
 
