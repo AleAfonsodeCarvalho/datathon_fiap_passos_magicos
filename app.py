@@ -31,7 +31,6 @@ model, features, medias = load_models()
 # Configuração da Interface
 st.set_page_config(page_title="Passos Mágicos - Mentor Digital", layout="wide")
 
-st.title("🚀 Mentor Digital: Analisador de Risco de Defasagem")
 st.markdown("""
 Esta ferramenta auxilia na identificação precoce de alunos em risco, utilizando os indicadores 
 acadêmicos, psicossociais e de engajamento da **Associação Passos Mágicos**.
